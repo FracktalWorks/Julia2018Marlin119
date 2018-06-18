@@ -1,6 +1,10 @@
 # Julia 2018 Marlin
 
-[Marlin](https://github.com/MarlinFirmware/Marlin) 1.1.8
+18 June 2018 - [Marlin](https://github.com/MarlinFirmware/Marlin) 1.1.8
+
+[Wiki](https://github.com/aharshac/FWJulia2018Marlin/wiki)
+
+[G-code](http://marlinfw.org/meta/gcode/)
 
 ## Build Variants
 - **Julia18_GLCD**
