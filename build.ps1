@@ -12,6 +12,7 @@ Write-Host ("PWD: " + $pwd) -ForegroundColor Green;
 # Directories
 $pwd = Split-Path -Parent -Path $MyInvocation.MyCommand.Definition;
 $dir_src = $pwd + "\src";
+$dir_common = $dir_src + "\common";
 $dir_marlin = $dir_src + "\Marlin\Marlin";
 $dir_intermediate = $pwd + "\intermediate";
 $dir_output = $pwd + "\output";
@@ -78,6 +79,11 @@ New-Item -ItemType directory -Path $dir_build;
 
 # Copy Marlin files to intermediate
 Copy-Item -Path ($dir_marlin + "\*") -Destination $dir_build -recurse -Force;
+
+# Copy common files to intermediate, if exists
+if( ( Test-Path -Path $dir_common)) {
+    Copy-Item -Path ($dir_common + "\*") -Destination $dir_build -recurse -Force;
+}
 
 # Rename Marlin.ino to $build_variant
 Rename-Item -NewName $file_ino -Path ($dir_build + "\Marlin.ino");
