@@ -12,13 +12,22 @@
 - **Julia18_RPI**
 - **Julia18_RPI_E**
 
-## Development Process
+## Migration Process
 1. Update Marlin if necessary, by `git submodule update` in project root.
 2. Copy overriding files to `src\common` and `src\{variant}`.
-3. Modify overriding files by referring to wiki. 
-4. Generate intermediates using build script.
-5. Export hex files using Arduino IDE and build script.
-6. Commit source to git.
+3. Modify overriding files by referring to wiki.
+4. Commit source to git.
+
+## Build Environment Initialization
+1. Install [Node.js](https://nodejs.org/en/download/).
+2. Change to project root in terminal.
+3. Execute `npm i` to install *Node.js* package dependencies.
+
+## Code Compilation
+1. Generate intermediates using build script.    
+	`npm start` or `node index.js` in terminal.
+2. Export hex files using Arduino IDE.
+
 
 ## Directory Structure
 - `src\` - Source root
