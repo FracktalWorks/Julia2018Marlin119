@@ -114,7 +114,7 @@ function copyData(srcPath, destPath) {
 
 function onFileEvent(filePath) {
 	try {
-		m(" Changed: " + filePath);
+		m(" " + moment().format("DD-MM-YYYY HH:mm:ss") + " Changed: " + filePath);
 		
 		if ( filePath.indexOf(".hex") < 0 ) {
 			// fs.copySync( filePath, dir_intermediate_variant, { "overwrite": true } );

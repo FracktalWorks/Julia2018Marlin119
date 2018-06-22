@@ -4275,7 +4275,12 @@ void home_all_axes() { gcode_G28(true); }
         mbl.reset();
         mbl_probe_index = 0;
         enqueue_and_echo_commands_P(lcd_wait_for_move ? PSTR("G29 S2") : PSTR("G28\nG29 S2"));
-        break;
+		
+		// Fracktal: ZMAX endstop fix
+		current_position[Z_AXIS] = Z_MIN_POS;
+		buffer_line_to_current_position();
+        
+		break;
 
       case MeshNext:
         if (mbl_probe_index < 0) {
