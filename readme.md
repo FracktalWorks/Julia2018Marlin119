@@ -39,4 +39,5 @@
   * `Julia18_RPI_E\`
 - `intermediate\{variant}\` - Marlin + common + variant files
 - `output\` - Hex files
-- `build.ps1` - Build automation PowerShell script
+- ~~`build.ps1` - Build automation PowerShell script~~ **redundant**
+- `index.js` - Build automation Node.js script
