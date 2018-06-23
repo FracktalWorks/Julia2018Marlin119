@@ -167,6 +167,7 @@ uint16_t max_display_update_time = 0;
   void lcd_main_menu();
   void lcd_tune_menu();
   void lcd_prepare_menu();
+  void lcd_bed_menu();
   void lcd_move_menu();
   void lcd_control_menu();
   void lcd_control_temperature_menu();
@@ -983,6 +984,9 @@ void kill_screen(const char* lcd_msg) {
     }
     else {
       MENU_ITEM(submenu, MSG_PREPARE, lcd_prepare_menu);
+	  
+	  // Fracktal: Bed calibration menu
+      MENU_ITEM(submenu, "Bed Calibration", lcd_bed_menu);
     }
     MENU_ITEM(submenu, MSG_CONTROL, lcd_control_menu);
 
@@ -1739,6 +1743,9 @@ void kill_screen(const char* lcd_msg) {
 
     static uint8_t manual_probe_index;
 	float temp_z_home_offset;
+	bool is_advanced_bed_leveling;
+	
+	void ABL_DoneMessage();
 
     // LCD probed points are from defaults
     constexpr uint8_t total_probe_points = (
@@ -1774,17 +1781,20 @@ void kill_screen(const char* lcd_msg) {
         defer_return_to_status = false;
       }
       if (lcdDrawUpdate) lcd_implementation_drawmenu_static(LCD_HEIGHT >= 4 ? 1 : 0, PSTR(MSG_LEVEL_BED_DONE));
-	  home_offset[Z_AXIS] = temp_z_home_offset;
       lcdDrawUpdate = LCDVIEW_CALL_REDRAW_NEXT;
     }
 
     void _lcd_level_goto_next_point();
-
+	
     /**
      * Step 7: Get the Z coordinate, click goes to the next point or exits
      */
     void _lcd_level_bed_get_z() {
       ENCODER_DIRECTION_NORMAL();
+	  
+	  if (is_advanced_bed_leveling && manual_probe_index >= total_probe_points) {
+		lcd_goto_screen(ABL_DoneMessage);
+      }
 
       if (lcd_clicked) {
 
@@ -1798,7 +1808,7 @@ void kill_screen(const char* lcd_msg) {
           // The last G29 records the point and enables bed leveling
           //
           lcd_wait_for_move = true;
-          lcd_goto_screen(_lcd_level_bed_done);
+          if (!is_advanced_bed_leveling) lcd_goto_screen(_lcd_level_bed_done);
           #if ENABLED(PROBE_MANUALLY)
             enqueue_and_echo_commands_P(PSTR("G29 V1"));
           #elif ENABLED(MESH_BED_LEVELING)
@@ -1867,8 +1877,6 @@ void kill_screen(const char* lcd_msg) {
     void _lcd_level_bed_homing_done() {
       if (lcdDrawUpdate) lcd_implementation_drawedit(PSTR(MSG_LEVEL_BED_WAITING));
       if (lcd_clicked) {
-		temp_z_home_offset = home_offset[Z_AXIS];
-		home_offset[Z_AXIS] = 0;
         manual_probe_index = 0;
         _lcd_level_goto_next_point();
       }
@@ -2974,138 +2982,137 @@ void kill_screen(const char* lcd_msg) {
 	*
 	*/
 
+	bool QBL_movesFinished() {
+		return !(planner.blocks_queued() || stepper.cleaning_buffer_counter);
+	}
+	
+	bool QBL_canMove() {
+		return lcd_clicked && QBL_movesFinished();
+	}
+	
+	void ABL_Done() {
+		is_advanced_bed_leveling = false;
+		lcd_goto_previous_menu();
+		defer_return_to_status = false;
+		home_offset[Z_AXIS] = temp_z_home_offset; //restore z offset back
+	}
+	
+	void ABL_DoneMessage() {
+		u8g.drawStr(0,36,"Advanced Leveling");
+		u8g.drawStr(0,48,"Done");
+		
+		if (QBL_movesFinished()) {
+			lcd_goto_screen(ABL_Done);
+		}
+	}
+	
+	void ABL_continueMessage() {
+		u8g.drawStr(0,12,"Slide a paper under");
+		u8g.drawStr(0,24,"nozzle while turning");
+		u8g.drawStr(0,36,"the dial at the");
+		u8g.drawStr(0,48,"next 4 points");
+		
+		if (QBL_canMove()) {
+			lcdDrawUpdate = LCDVIEW_CALL_REDRAW_NEXT;
+			//lcd_goto_screen(_lcd_level_bed_homing);
+			lcd_goto_screen(_lcd_level_bed_homing_done);
+		}
+	}
 
-	// void _lcd_move_xyz(const char* name, AxisEnum axis) {
-	//   if (lcd_clicked) { return lcd_goto_previous_menu(); }
-	//   ENCODER_DIRECTION_NORMAL();
-	//   if (encoderPosition) {
-	//     refresh_cmd_timeout();
-
-	//     float min = current_position[axis] - 1000,
-	//           max = current_position[axis] + 1000;
-
-
-	//     // Get the new position
-	//     current_position[axis] += float((int32_t)encoderPosition) * move_menu_scale;
-
-
-	//     // Limit only when trying to move towards the limit
-	//     if ((int32_t)encoderPosition < 0) NOLESS(current_position[axis], min);
-	//     if ((int32_t)encoderPosition > 0) NOMORE(current_position[axis], max);
-
-	//     manual_move_to_current(axis);
-
-	//     encoderPosition = 0;
-	//     lcdDrawUpdate = LCDVIEW_REDRAW_NOW;
-	//   }
-	//   if (lcdDrawUpdate) lcd_implementation_drawedit(name, ftostr41sign(current_position[axis]));
-	// }
-
-	void bedLevelingDone() {
+	void QBL_Done() {
+		is_advanced_bed_leveling = false;
 		lcd_goto_previous_menu();
 		lcd_completion_feedback();
 		defer_return_to_status = false;
-		home_offset[Z_AXIS] = -current_position[Z_AXIS] ;
-		settings.save();
-		//save Z offset
+		home_offset[Z_AXIS] = temp_z_home_offset; //restore z offset back
 	}
-
-
-	/*
-	void setZOffsetMessage(){
-		u8g.drawStr(0,12,"Slide a paper sheet");
-		u8g.drawStr(0,24,"under Nozzle while");
-		u8g.drawStr(0,36,"turning dial, untill");
-		u8g.drawStr(0,48,"paper stops sliding");
-
-		if (lcd_clicked) { 
-			return bedLevelingDone(); 
-		}
-			
-		ENCODER_DIRECTION_NORMAL();
-			
-		if (encoderPosition) {
-			refresh_cmd_timeout();
-
-			// Get the new position
-			current_position[Z_AXIS] += float((int32_t)encoderPosition) * 0.05;
-
-			manual_move_to_current(Z_AXIS);
-
-			encoderPosition = 0;
+	
+	void QBL_DoneMessage() {
+		u8g.drawStr(0,36,"Quick Leveling Done");
+		
+		if (QBL_canMove()) {
+			lcd_goto_screen(QBL_Done);
 		}
 	}
-
-
-	void setZOffsetMove() {
-		lcd_goto_screen(setZOffsetMessage);
-		enqueue_and_echo_commands_P(PSTR("G1 Z20"));
-		enqueue_and_echo_commands_P(PSTR("G1 X100 Y100 Z2"));
-	}
-	*/
-
-
-	void bedLevelingThirdPositionMessage() {
+	
+	void QBL_ThirdPositionMessage() {
 		u8g.drawStr(0,12,"Lock back leveling");
 		u8g.drawStr(0,24,"knob clockwise");
-		u8g.drawStr(0,36,"dial");
-
+		u8g.drawStr(0,36,"and click the dial"); 
+		
+		//if (QBL_canMove()) {
 		if (lcd_clicked) {
-			//setZOffsetMove();
-			bedLevelingDone();
+			defer_return_to_status = false;
+			if (!is_advanced_bed_leveling) {
+				lcd_goto_screen(QBL_DoneMessage);
+			} else {
+				lcd_goto_screen(ABL_continueMessage);
+			}
 		}
+		
 	}
 
-	void bedLevelingThirdPosition() {
-		lcd_goto_screen(bedLevelingThirdPositionMessage);
+	void QBL_ThirdPosition() {
+		// lcdDrawUpdate = LCDVIEW_CALL_NO_REDRAW;
+		lcd_goto_screen(QBL_ThirdPositionMessage);
+		
+		enqueue_and_echo_commands_P(PSTR("G1 F9000"));
 		enqueue_and_echo_commands_P(PSTR("G1 Z20"));
 		enqueue_and_echo_commands_P(PSTR("G1 X110 Y197"));
-		enqueue_and_echo_commands_P(PSTR("G1 X110 Y197 Z0.05"));
+		enqueue_and_echo_commands_P(PSTR("G1 X110 Y197 Z0"));
 	}
 
 
 
-	void bedLevelingSecondPositionMessage() {
+	void QBL_SecondPositionMessage() {
 		u8g.drawStr(0,12,"Lock left leveling");
 		u8g.drawStr(0,24,"knob clockwise");
 		u8g.drawStr(0,36,"and click the dial");
-
-		if (lcd_clicked) {
-			bedLevelingThirdPosition();
+		
+		if (QBL_canMove()) {
+			QBL_ThirdPosition();
 		}
 	}
 
-	void bedLevelingSecondPosition() {
-		lcd_goto_screen(bedLevelingSecondPositionMessage);
+	void QBL_SecondPosition() {
+		// lcdDrawUpdate = LCDVIEW_CALL_NO_REDRAW;
+		lcd_goto_screen(QBL_SecondPositionMessage);
+
+		enqueue_and_echo_commands_P(PSTR("G1 F9000"));
 		enqueue_and_echo_commands_P(PSTR("G1 Z20"));
 		enqueue_and_echo_commands_P(PSTR("G1 X35.6 Y21"));
-		enqueue_and_echo_commands_P(PSTR("G1 X35.6 Y21 Z0.05"));
+		enqueue_and_echo_commands_P(PSTR("G1 X35.6 Y21 Z0"));
+		
 	}
 
 
-	void bedLevelingFirstPositionMessage() {
+	void QBL_FirstPositionMessage() {
 		u8g.drawStr(0,12,"Lock right leveling");
 		u8g.drawStr(0,24,"knob clockwise");
 		u8g.drawStr(0,36,"and click the dial");
-
-		if (lcd_clicked) {
-			bedLevelingSecondPosition();
+		
+		if (QBL_canMove()) {
+			QBL_SecondPosition();
 		}
 	}
 
-	void bedLevelingFirstPosition() {
-		lcd_goto_screen(bedLevelingFirstPositionMessage);
+	void QBL_FirstPosition() {
+		// lcdDrawUpdate = LCDVIEW_CALL_NO_REDRAW;
+		lcd_goto_screen(QBL_FirstPositionMessage);
+
+		enqueue_and_echo_commands_P(PSTR("G1 F9000"));
 		enqueue_and_echo_commands_P(PSTR("G1 X181 Y21"));
 		enqueue_and_echo_commands_P(PSTR("G1 X181 Y21 Z0"));
 	}
 
-	void bedLevelingUnlockMessage() {
+	void QBL_UnlockMessage() {
 		u8g.drawStr(0,12,"Unlock all leveling");
 		u8g.drawStr(0,24,"knobs anti-clockwise");
 		u8g.drawStr(0,36,"and click the dial");
-
-		if (lcd_clicked) {
-			bedLevelingFirstPosition();
+		
+		
+		if (QBL_canMove()) {
+			QBL_FirstPosition();
 		}
 	}
 
@@ -3113,8 +3120,8 @@ void kill_screen(const char* lcd_msg) {
 	 * Step 4: Display "Click to Begin", wait for click
 	 *         Move to the first probe position
 	 */
-	void bedLevelUnlockPosition() {
-		lcd_goto_screen(bedLevelingUnlockMessage);
+	void QBL_UnlockPosition() {
+		lcd_goto_screen(QBL_UnlockMessage);
 		enqueue_and_echo_commands_P(PSTR("G1 X100 Y100 Z50"));
 	}
 
@@ -3122,11 +3129,11 @@ void kill_screen(const char* lcd_msg) {
 	 * Step 4: Display "Click to Begin", wait for click
 	 *         Move to the first probe position
 	 */
-	void bedLevelingHomingDone() {
+	void QBL_HomingDone() {
 		if (lcdDrawUpdate) 
 			lcd_implementation_drawedit(PSTR(MSG_LEVEL_BED_WAITING));
 		if (lcd_clicked) {
-			bedLevelUnlockPosition();
+			QBL_UnlockPosition();
 		}
 
 	}
@@ -3134,23 +3141,24 @@ void kill_screen(const char* lcd_msg) {
 	/**
 	* Step 2: Display "Homing XYZ" - Wait for homing to finish
 	*/
-	void bedLevelingHome() {
-		if (lcdDrawUpdate) lcd_implementation_drawedit(PSTR(MSG_LEVEL_BED_HOMING), NULL);
+	void QBL_Home() {
+		if (lcdDrawUpdate) 
+			lcd_implementation_drawedit(PSTR(MSG_LEVEL_BED_HOMING), NULL);
 		lcdDrawUpdate = LCDVIEW_CALL_NO_REDRAW;
 		if (axis_homed[X_AXIS] && axis_homed[Y_AXIS] && axis_homed[Z_AXIS])
-		lcd_goto_screen(bedLevelingHomingDone);
+			lcd_goto_screen(QBL_HomingDone);
 	}
 
 	/**
 	* Step 1: Start Bed leveling by homing bed
 	*/
-	void bedLevelingScreen1() {
+	void QBL_Start() {
+		is_advanced_bed_leveling = false;
 		defer_return_to_status = true;
-		//tempZHomeOffset = 0 ;
-		//tempZHomeOffset = home_offset[Z_AXIS] ;
+		temp_z_home_offset = home_offset[Z_AXIS];
 		home_offset[Z_AXIS] = 0;
 		axis_homed[X_AXIS] = axis_homed[Y_AXIS] = axis_homed[Z_AXIS] = false;
-		lcd_goto_screen(bedLevelingHome);
+		lcd_goto_screen(QBL_Home);
 		enqueue_and_echo_commands_P(PSTR("G28"));
 	}
 	
@@ -3187,7 +3195,7 @@ void lcd_prepare_menu() {
 	// //
 	// //Bed Leveling
 	// //
-	MENU_ITEM(submenu, "FW Bed Leveling Wizard", bedLevelingScreen1);
+	MENU_ITEM(submenu, "FW Bed Leveling Wizard", QBL_Start);
     MENU_MULTIPLIER_ITEM_EDIT(float32, "FW Z Offset", &home_offset[Z_AXIS], -20, 20);
 
     //
@@ -3297,9 +3305,41 @@ void lcd_prepare_menu() {
     END_MENU();
   }
   
-  
+	
+	/*
+	 * Fracktal: Bed calibration menu
+	 */
+	 
+	void ABL_start() {
+		is_advanced_bed_leveling = true;
+		defer_return_to_status = true;
+		//tempZHomeOffset = 0 ;
+		//tempZHomeOffset = home_offset[Z_AXIS] ;
+		temp_z_home_offset = home_offset[Z_AXIS];
+		home_offset[Z_AXIS] = 0;
+		axis_homed[X_AXIS] = axis_homed[Y_AXIS] = axis_homed[Z_AXIS] = false;
+		lcd_goto_screen(QBL_Home);
+		enqueue_and_echo_commands_P(PSTR("G28"));
+	}
+	
+	void lcd_bed_menu() {
+		START_MENU();
 
-  
+		//
+		// ^ Main
+		//
+		MENU_BACK(MSG_MAIN);
+	  
+		MENU_ITEM(submenu, "Quick Leveling", QBL_Start);
+		
+		#if ENABLED(LCD_BED_LEVELING)
+			MENU_ITEM(submenu, "Advanced Leveling", ABL_start);
+		#endif
+		
+		END_MENU();
+	}
+	
+	
   /**
    *
    * "Control" submenu

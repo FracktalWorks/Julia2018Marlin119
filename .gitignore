@@ -1,6 +1,7 @@
 src/Marlin
 intermediate/*
 output/*
+bkp
 
 # Logs
 logs

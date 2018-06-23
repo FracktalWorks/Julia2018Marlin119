@@ -128,8 +128,8 @@ function onFileEvent(filePath) {
 	}
 }
 
-const watcher = chokidar.watch( [dir_src_variant, dir_src_common] , { "persistent": true, "ignoreInitial": true } );
-// watcher.on('add', onFileEvent);
+const watcher = chokidar.watch( [dir_src_variant, dir_src_common, path_hex] , { "persistent": true, "ignoreInitial": true } );
+watcher.on('add', onFileEvent);
 watcher.on('change', onFileEvent);
 // watcher.on('unlink', onFileEvent);
 
