@@ -76,7 +76,7 @@
 // build by the user have been successfully uploaded into firmware.
 #define STRING_CONFIG_H_AUTHOR "Vijay Raghav" // Who made the changes.
 #define SHOW_BOOTSCREEN
-#define STRING_SPLASH_LINE1 0.01 // will be shown during bootup in line 1
+#define STRING_SPLASH_LINE1 "0.01" // will be shown during bootup in line 1
 #define STRING_SPLASH_LINE2 "www.fracktal.in"        // will be shown during bootup in line 2
 
 //
@@ -1768,5 +1768,11 @@
 //
 // With this option servos are powered only during movement, then turned off to prevent jitter.
 //#define DEACTIVATE_SERVOS_AFTER_MOVE
+
+
+/* FRACKTAL WORKS: START */
+#define POWER_LOSS_RECOVERY
+/* FRACKTAL WORKS: END */
+
 
 #endif // CONFIGURATION_H

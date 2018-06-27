@@ -60,6 +60,14 @@
   bool lcd_external_control; // = false
 #endif
 
+
+/* FRACKTAL WORKS: START */
+#if ENABLED(POWER_LOSS_RECOVERY)
+  #include "power_loss_recovery.h"
+#endif
+/* FRACKTAL WORKS: END */
+
+
 // Initialized by settings.load()
 int16_t lcd_preheat_hotend_temp[2], lcd_preheat_bed_temp[2], lcd_preheat_fan_speed[2];
 
@@ -795,6 +803,18 @@ void kill_screen(const char* lcd_msg) {
 
     void lcd_sdcard_stop() {
       card.stopSDPrint();
+			
+/* FRACKTAL WORKS: START */
+			#if ENABLED(POWER_LOSS_RECOVERY)
+        card.openJobRecoveryFile(false);
+        job_recovery_info.valid_head = job_recovery_info.valid_foot = 0;
+        (void)card.saveJobRecoveryInfo();
+        card.closeJobRecoveryFile();
+        //job_recovery_commands_count = 0;
+				job_recovery_found = false;
+      #endif
+/* FRACKTAL WORKS: END */
+
       clear_command_queue();
       quickstop_stepper();
       print_job_timer.stop();
@@ -805,9 +825,84 @@ void kill_screen(const char* lcd_msg) {
       wait_for_heatup = false;
       lcd_setstatusPGM(PSTR(MSG_PRINT_ABORTED), -1);
       lcd_return_to_status();
+		
     }
 
   #endif // SDSUPPORT
+
+
+/* FRACKTAL WORKS: START */
+	#if ENABLED(POWER_LOSS_RECOVERY)
+
+    static void lcd_sdcard_recover_job() {
+      //char cmd[20];
+			
+			// Start draining the job recovery command queue
+      
+			job_recovery_found = false;
+			
+			if (!card.ressurectFileExists()) {
+				job_recovery_phase = JOB_RECOVERY_IDLE;
+				
+				SERIAL_PROTOCOLLNPAIR("Failed ressurect file: ", card.getRessurectFileName());
+				//SERIAL_PROTOCOLCHAR('.');
+				//SERIAL_EOL();
+				
+			} else {
+				job_recovery_phase = JOB_RECOVERY_YES;
+				
+				SERIAL_PROTOCOLLNPAIR("Opening ressurect file: ", card.getRessurectFileName());
+				
+				card.openAndPrintFile(card.getRessurectFileName());
+				//card.startFileprint();
+				
+				/*
+				char cmd[40];
+				
+				sprintf_P(cmd, PSTR("M23 %s\nM24"), card.getRessurectFileName());  //opens a file for reading from the SD card
+				enqueue_and_echo_command(cmd);
+				
+				//strcpy_P(cmd, PSTR("M24"));
+				//enqueue_and_echo_command(cmd);
+				*/
+			}
+
+			// Return to status now
+      lcd_return_to_status();
+
+			/*
+      // Resume the print job timer
+      if (job_recovery_info.print_job_elapsed)
+        print_job_timer.resume(job_recovery_info.print_job_elapsed);
+
+      // Start getting commands from SD
+       card.startFileprint();
+			 */
+    }
+		
+		static void lcd_sdcard_recover_stop() {
+			if (card.jobRecoverFileExists()) {
+				card.removeJobRecoveryFile();
+			}
+			
+			if (card.ressurectFileExists()) {
+				card.removeFile(card.getRessurectFileName());
+			}
+			
+			lcd_sdcard_stop();
+		}
+		
+    static void lcd_job_recovery_menu() {
+      defer_return_to_status = true;
+      START_MENU();
+      MENU_ITEM(function, MSG_RESUME_PRINT, lcd_sdcard_recover_job);
+      MENU_ITEM(function, MSG_STOP_PRINT, lcd_sdcard_recover_stop);
+      END_MENU();
+    }
+
+  #endif // POWER_LOSS_RECOVERY
+/* FRACKTAL WORKS: END */
+
 
   #if ENABLED(MENU_ITEM_CASE_LIGHT)
 
@@ -4902,6 +4997,18 @@ void lcd_update() {
     }
 
   #endif // SDSUPPORT && SD_DETECT_PIN
+	
+
+/* FRACKTAL WORKS: START */
+	#if ENABLED(POWER_LOSS_RECOVERY)
+    // if (job_recovery_commands_count && job_recovery_phase == JOB_RECOVERY_IDLE) {
+    if (job_recovery_found && card.ressurectFileExists() && job_recovery_phase == JOB_RECOVERY_IDLE) {
+      lcd_goto_screen(lcd_job_recovery_menu);
+      job_recovery_phase = JOB_RECOVERY_MAYBE; // Waiting for a response
+    }
+  #endif
+/* FRACKTAL WORKS: END */
+
 
   const millis_t ms = millis();
   if (ELAPSED(ms, next_lcd_update_ms)
