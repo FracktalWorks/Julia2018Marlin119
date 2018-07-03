@@ -806,12 +806,13 @@ void kill_screen(const char* lcd_msg) {
 			
 /* FRACKTAL WORKS: START */
 			#if ENABLED(POWER_LOSS_RECOVERY)
+				/*
         card.openJobRecoveryFile(false);
         job_recovery_info.valid_head = job_recovery_info.valid_foot = 0;
-        (void)card.saveJobRecoveryInfo();
+        card.saveJobRecoveryInfo();
         card.closeJobRecoveryFile();
-        //job_recovery_commands_count = 0;
-				job_recovery_found = false;
+				*/
+				card.removeJobRecoveryFile();
       #endif
 /* FRACKTAL WORKS: END */
 
@@ -834,41 +835,36 @@ void kill_screen(const char* lcd_msg) {
 /* FRACKTAL WORKS: START */
 	#if ENABLED(POWER_LOSS_RECOVERY)
 
-    static void lcd_sdcard_recover_job() {
-      //char cmd[20];
+    static void lcd_sdcard_recover_job() {		
+			// Return to status now
+      lcd_return_to_status();
 			
-			// Start draining the job recovery command queue
-      
-			job_recovery_found = false;
-			
-			if (!card.ressurectFileExists()) {
-				job_recovery_phase = JOB_RECOVERY_IDLE;
+			if (!card.recoveryFileExists()) {
+				// job_recovery_phase = JOB_RECOVERY_IDLE;
+				restoration_phase = IDLE;
 				
-				SERIAL_PROTOCOLLNPAIR("Failed ressurect file: ", card.getRessurectFileName());
+				SERIAL_PROTOCOLLNPAIR("Failed ressurect file: ", RECOVERY_FILE_NAME);
 				//SERIAL_PROTOCOLCHAR('.');
 				//SERIAL_EOL();
 				
 			} else {
-				job_recovery_phase = JOB_RECOVERY_YES;
+				// job_recovery_phase = JOB_RECOVERY_YES;
+				restoration_phase = START;
 				
-				SERIAL_PROTOCOLLNPAIR("Opening ressurect file: ", card.getRessurectFileName());
+				SERIAL_PROTOCOLLNPAIR("Opening ressurect file: ", RECOVERY_FILE_NAME);
 				
-				card.openAndPrintFile(card.getRessurectFileName());
+				//card.openAndPrintFile(RECOVERY_FILE_NAME);
 				//card.startFileprint();
 				
-				/*
 				char cmd[40];
 				
-				sprintf_P(cmd, PSTR("M23 %s\nM24"), card.getRessurectFileName());  //opens a file for reading from the SD card
+				sprintf_P(cmd, PSTR("M23 %s"), RECOVERY_FILE_NAME);  //opens a file for reading from the SD card
 				enqueue_and_echo_command(cmd);
 				
-				//strcpy_P(cmd, PSTR("M24"));
-				//enqueue_and_echo_command(cmd);
-				*/
+				enqueue_and_echo_commands_P(PSTR("M24"));
+				
+				enqueue_and_echo_commands_P(PSTR("M31"));
 			}
-
-			// Return to status now
-      lcd_return_to_status();
 
 			/*
       // Resume the print job timer
@@ -881,12 +877,8 @@ void kill_screen(const char* lcd_msg) {
     }
 		
 		static void lcd_sdcard_recover_stop() {
-			if (card.jobRecoverFileExists()) {
-				card.removeJobRecoveryFile();
-			}
-			
-			if (card.ressurectFileExists()) {
-				card.removeFile(card.getRessurectFileName());
+			if (card.recoveryFileExists()) {
+				card.removeFile(RECOVERY_FILE_NAME);
 			}
 			
 			lcd_sdcard_stop();
@@ -5001,10 +4993,13 @@ void lcd_update() {
 
 /* FRACKTAL WORKS: START */
 	#if ENABLED(POWER_LOSS_RECOVERY)
+		// do_print_job_recovery();
+	
     // if (job_recovery_commands_count && job_recovery_phase == JOB_RECOVERY_IDLE) {
-    if (job_recovery_found && card.ressurectFileExists() && job_recovery_phase == JOB_RECOVERY_IDLE) {
+    if (restoration_phase == FILE_MADE && card.recoveryFileExists()) {
       lcd_goto_screen(lcd_job_recovery_menu);
-      job_recovery_phase = JOB_RECOVERY_MAYBE; // Waiting for a response
+      // job_recovery_phase = JOB_RECOVERY_MAYBE; // Waiting for a response
+			restoration_phase = LCD_MAYBE;
     }
   #endif
 /* FRACKTAL WORKS: END */

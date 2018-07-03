@@ -31,8 +31,6 @@
 #include "types.h"
 #include "MarlinConfig.h"
 
-#define SAVE_INFO_INTERVAL_MS 0
-#define SAVE_EACH_CMD_MODE
 //#define DEBUG_POWER_LOSS_RECOVERY
 
 // #define RECOVERY_CODE_FILE "RESR.GCODE"
@@ -71,27 +69,31 @@ typedef struct {
 
 extern job_recovery_info_t job_recovery_info;
 
+/*
 enum JobRecoveryPhase : unsigned char {
   JOB_RECOVERY_IDLE,
   JOB_RECOVERY_MAYBE,
   JOB_RECOVERY_YES
 };
-//extern JobRecoveryPhase job_recovery_phase;
-
-/*
-#if HAS_LEVELING
-  #define APPEND_CMD_COUNT 7
-#else
-  #define APPEND_CMD_COUNT 5
-#endif
+extern JobRecoveryPhase job_recovery_phase;
 */
+
+enum RestorationPhase : unsigned char {
+  IDLE,
+  BIN_FOUND,
+  FILE_MADE,
+  LCD_MAYBE,
+	START
+};
+extern RestorationPhase restoration_phase;
+
 
 //#define APPEND_CMD_COUNT HOTENDS + FAN_COUNT + 15
 
 /* FRACKTAL WORKS: START */
 //extern char job_recovery_commands[BUFSIZE + APPEND_CMD_COUNT][MAX_CMD_SIZE];
 //extern uint8_t job_recovery_commands_count;
-extern bool job_recovery_found;
+//extern bool job_recovery_found;
 /* FRACKTAL WORKS: END */
 
 

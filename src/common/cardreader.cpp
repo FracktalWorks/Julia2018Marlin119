@@ -373,8 +373,19 @@ void CardReader::openFile(char* name, const bool read, const bool subcall/*=fals
     SERIAL_ECHOPGM("Now ");
     serialprintPGM(doing == 1 ? PSTR("doing") : PSTR("fresh"));
     SERIAL_ECHOLNPAIR(" file: ", name);
+		
+			// if (strcmp(strupr(RECOVERY_FILE_NAME), strupr(name)) == 0) {
+			if (strstr(strupr(name), strupr(RECOVERY_FILE_NAME))) {
+				restoration_phase = START;
+				SERIAL_ECHOLN("Recovery file confirmed.");
+			} else {
+				restoration_phase = IDLE;
+				SERIAL_ECHOLN("Not recovery file.");
+			}
   }
 
+
+	
   stopSDPrint();
 
   SdFile myDir;
@@ -902,10 +913,9 @@ void CardReader::printingHasFinished() {
 		#if ENABLED(POWER_LOSS_RECOVERY)
       openJobRecoveryFile(false);
       job_recovery_info.valid_head = job_recovery_info.valid_foot = 0;
-      (void)saveJobRecoveryInfo();
+      saveJobRecoveryInfo();
       closeJobRecoveryFile();
       //job_recovery_commands_count = 0;
-			job_recovery_found = false;
     #endif
 /* FRACKTAL WORKS: END */
 
@@ -945,14 +955,14 @@ void CardReader::printingHasFinished() {
 
   void CardReader::closeJobRecoveryFile() { jobRecoveryFile.close(); }
 
-  bool CardReader::jobRecoverFileExists() {
+  bool CardReader::jobRecoveryFileExists() {
     return jobRecoveryFile.open(&root, job_recovery_file_name, O_READ);
   }
 
   int16_t CardReader::saveJobRecoveryInfo() {
     jobRecoveryFile.seekSet(0);
     const int16_t ret = jobRecoveryFile.write(&job_recovery_info, sizeof(job_recovery_info));
-    if (ret == -1) SERIAL_PROTOCOLLNPGM("Power-loss file write failed.");
+    if (ret == -1) SERIAL_PROTOCOLLNPGM("Recovery BIN write failed.");
     return ret;
   }
 
@@ -961,27 +971,31 @@ void CardReader::printingHasFinished() {
   }
 
   void CardReader::removeJobRecoveryFile() {
+		if (!jobRecoveryFileExists()) return;
+		
     if (jobRecoveryFile.remove(&root, job_recovery_file_name))
-      SERIAL_PROTOCOLLNPGM("Power-loss file deleted.");
+      SERIAL_PROTOCOLLNPGM("Recovery BIN deleted.");
     else
-      SERIAL_PROTOCOLLNPGM("Power-loss file delete failed.");
+      SERIAL_PROTOCOLLNPGM("Recovery BIN delete failed.");
   }
 	
+	/*
 	const char* CardReader::getRessurectFileName() {
-    return "RESR.GCO";
+    return strlwr("resr.gco");
   }
+	*/
 	
-	bool CardReader::ressurectFileExists() {
-    SdFile ressurectFile;
+	bool CardReader::recoveryFileExists() {
+    SdFile recoveryFile;
 		
 		if (!cardOK) return false;
-    if (ressurectFile.isOpen()) {
-			ressurectFile.close();
+    if (recoveryFile.isOpen()) {
+			recoveryFile.close();
 			return true;
 		}
 		
-		if (ressurectFile.open(&root, getRessurectFileName(), true)) {
-			ressurectFile.close();
+		if (recoveryFile.open(&root, RECOVERY_FILE_NAME, true)) {
+			recoveryFile.close();
 			return true;
 		}
 		

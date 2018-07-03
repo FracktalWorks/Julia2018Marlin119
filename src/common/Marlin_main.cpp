@@ -1264,7 +1264,7 @@ void get_available_commands() {
 	#if ENABLED(POWER_LOSS_RECOVERY)
     // Commands for power-loss recovery take precedence
     //if (job_recovery_phase == JOB_RECOVERY_YES && drain_job_recovery_commands()) return;
-    if (job_recovery_phase == JOB_RECOVERY_YES && job_recovery_found) return;
+		// if (restoration_phase == START) return;
   #endif
 /* FRACKTAL WORKS: END */
 
@@ -6988,7 +6988,7 @@ inline void gcode_M17() {
 
 /* FRACKTAL WORKS: START */
     #if ENABLED(POWER_LOSS_RECOVERY)
-      card.removeJobRecoveryFile();
+      // card.removeJobRecoveryFile();
     #endif	
 /* FRACKTAL WORKS: END */
 	
@@ -14766,7 +14766,7 @@ void setup() {
 	
 
 /* FRACKTAL WORKS: START */
-  #if ENABLED(POWER_LOSS_RECOVERY)
+	#if ENABLED(POWER_LOSS_RECOVERY)
     do_print_job_recovery();
   #endif	
 /* FRACKTAL WORKS: END */

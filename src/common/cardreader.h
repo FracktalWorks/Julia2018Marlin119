@@ -85,14 +85,15 @@ public:
 
 /* FRACKTAL WORKS: START */
   #if ENABLED(POWER_LOSS_RECOVERY)
+		#define RECOVERY_FILE_NAME "FWREC.GCO"
     void openJobRecoveryFile(const bool read);
     void closeJobRecoveryFile();
-    bool jobRecoverFileExists();
+    bool jobRecoveryFileExists();
     int16_t saveJobRecoveryInfo();
     int16_t loadJobRecoveryInfo();
     void removeJobRecoveryFile();
-		bool ressurectFileExists();
-		const char* getRessurectFileName();
+		bool recoveryFileExists();
+		// const char* getRessurectFileName();
   #endif
 /* FRACKTAL WORKS: END */
 
