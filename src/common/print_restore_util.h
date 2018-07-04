@@ -1,21 +1,6 @@
 #ifndef _PRINT_RESTORE_UTIL_H
 #define _PRINT_RESTORE_UTIL_H
 
-/*	
-	char *ftostr31(const float &x);
-
-	// Convert float to string with 123.4 format
-	char *ftostr31ns(const float &x);
-
-
-	// Convert float to string with 12345.678 format
-	char *ftostr53(const float &x);
-	
-	// Convert float to string with 123.456 format
-	char *ftostr33(const float &x);
-*/	
-
-
 	// Convert float to string with 123.4 format, signed
 	void ftostr31s(float x, char c[8]);
 
