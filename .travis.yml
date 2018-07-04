@@ -1,28 +1,42 @@
-{
-  "sudo": true,
-  "language": "cpp",
-  "branches": {
-    "except": "gh-pages"
-  },
-  
-  "env": {
-    "global": "PRETTYNAME=\"Fracktal Works Julia 2018 Marlin\""
-  },
-  
-  "git": {
-    "submodules": false
-  },
-  
-  "before_install": "sed -i 's/git@github.com:/git:\/\/github.com\//' .gitmodules git submodule update --init --recursive chmod +x ${TRAVIS_BUILD_DIR}/scripts/* export PATH=${TRAVIS_BUILD_DIR}/scripts/:${PATH} // make display available for arduino CLI /sbin/start-stop-daemon --start --quiet --pidfile /tmp/custom_xvfb_1.pid --make-pidfile --background --exec /usr/bin/Xvfb -- :1 -ac -screen 0 1280x1024x16 sleep 3 export DISPLAY=:1.0\n// download and install arduino 1.8.5 wget --quiet https://downloads.arduino.cc/arduino-1.8.5-linux64.tar.xz tar xf arduino-1.8.5-linux64.tar.xz mv arduino-1.8.5 $HOME/arduino_ide\n// add the Arduino CLI to our PATH export PATH=\"$HOME/arduino_ide:$PATH\"", 
-  "install": "arduino --install-library \"LiquidCrystal_I2C\",\"LiquidTWI2\",\"U8glib\",\"Adafruit_NeoPixel\"", 
-  
-  "before_script": "cd ${TRAVIS_BUILD_DIR}",
-  "script": "variant", 
-   
-  "notifications": {
-    "email": {
-      "on_failure": "change", 
-      "on_success": "change"
-    }
-  }
-}
+--- 
+language: cpp
+
+sudo: true
+
+env: 
+  global: 
+    - "PRETTYNAME=\"Fracktal Works Julia 2018 Marlin\""
+
+git: 
+  submodules: false
+
+branches: 
+  except: gh-pages
+
+before_install: 
+  - "chmod +x ${TRAVIS_BUILD_DIR}/scripts/*"
+  - "export PATH=${TRAVIS_BUILD_DIR}/scripts/:${PATH}"
+  - "sleep 3"
+  - "export DISPLAY=:1.0"
+  - "wget --quiet https://downloads.arduino.cc/arduino-1.8.5-linux64.tar.xz"
+  - "tar xf arduino-1.8.5-linux64.tar.xz"
+  - "mv arduino-1.8.5 $HOME/arduino_ide"
+  - "export PATH=\"$HOME/arduino_ide:$PATH\""
+
+install: 
+  - "arduino --install-library \"LiquidCrystal_I2C\",\"LiquidTWI2\",\"U8glib\",\"Adafruit_NeoPixel\""
+
+before_script: 
+  - "cd ${TRAVIS_BUILD_DIR}"
+  - "sed -i 's/git@github.com:/git:\\/\\/github.com\\//' .gitmodules"
+  - "git submodule update --init --recursive"
+
+script: 
+  - variant
+
+notifications: 
+  email: 
+    - 
+      on_failure: change
+    - 
+      on_success: change
