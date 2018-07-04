@@ -7,7 +7,7 @@ branches:
 
 env:
     global:
-        PRETTYNAME="Adafruit FT6206 Arduino Library"
+        PRETTYNAME="Fracktal Works Julia 2018 Marlin"
 
 before_install:
     # Publish the script folder
