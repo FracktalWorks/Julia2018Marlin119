@@ -48,6 +48,7 @@
 /**  Machine Branding  **/
 #define USE_AUTOMATIC_VERSIONING
 
+/** Machine name for variant **/
 #if BV(JULIA_2018_GLCD)
 	#define CUSTOM_MACHINE_NAME "Julia 2018 Basic"
 #elif BV(JULIA_2018_GLCD_HB)
