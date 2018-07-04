@@ -27,15 +27,15 @@ install:
   - pwd
   - git clone https://github.com/kiyoshigawa/LiquidCrystal_I2C.git
   - ls
-  - mv LiquidCrystal_I2C/LiquidCrystal_I2C /usr/local/share/arduino/libraries/LiquidCrystal_I2C
+  - mv LiquidCrystal_I2C/LiquidCrystal_I2C /usr/local/share/arduino/libraries/
   #
   # Install: LiquidTWI2 library
   - git clone https://github.com/lincomatic/LiquidTWI2.git
-  - sudo mv LiquidTWI2 /usr/local/share/arduino/libraries/LiquidTWI2
+  - sudo mv LiquidTWI2 /usr/local/share/arduino/libraries/
   #
   # Install: Monochrome Graphics Library for LCDs and OLEDs
   - git clone https://github.com/olikraus/U8glib_Arduino.git
-  - sudo mv U8glib_Arduino /usr/local/share/arduino/libraries/U8glib
+  - sudo mv U8glib_Arduino /usr/local/share/arduino/libraries/
   #
   # Install: L6470 Stepper Motor Driver library
   # - git clone https://github.com/ameyer/Arduino-L6470.git
@@ -47,15 +47,15 @@ install:
   #
   # Install: TMC2130 Stepper Motor Controller library
   - git clone https://github.com/teemuatlut/TMC2130Stepper.git
-  - sudo mv TMC2130Stepper /usr/local/share/arduino/libraries/TMC2130Stepper
+  - sudo mv TMC2130Stepper /usr/local/share/arduino/libraries/
   #
   # Install: TMC2208 Stepper Motor Controller library
   - git clone https://github.com/teemuatlut/TMC2208Stepper.git
-  - sudo mv TMC2208Stepper /usr/local/share/arduino/libraries/TMC2208Stepper
+  - sudo mv TMC2208Stepper /usr/local/share/arduino/libraries/
   #
   # Install: Adafruit Neopixel library
   - git clone https://github.com/adafruit/Adafruit_NeoPixel.git
-  - sudo mv Adafruit_NeoPixel /usr/local/share/arduino/libraries/Adafruit_NeoPixel
+  - sudo mv Adafruit_NeoPixel /usr/local/share/arduino/libraries/
 
 before_script: 
   - "cd ${TRAVIS_BUILD_DIR}"
