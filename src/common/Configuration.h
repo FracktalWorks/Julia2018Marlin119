@@ -64,6 +64,8 @@
 #define STRING_CONFIG_H_AUTHOR "Vijay Raghav" // Who made the changes.
 #define STRING_SPLASH_LINE1 "0.01" // will be shown during bootup in line 1
 #define STRING_SPLASH_LINE2 "www.fracktal.in" // will be shown during bootup in line 2
+
+#define SHOW_BOOTSCREEN
 #define SHOW_CUSTOM_BOOTSCREEN
 
 
