@@ -72,7 +72,7 @@ if [ -z "${TRAVIS}" ]; then
 	./scripts/header "${STAGING_BUILD}" "${P1}"
 	# start cmd "/k node index.js"
 else
-	STAGING_BUILD_HEX = "${STAGING_BUILD_INO}.mega.hex"
+	BUILD_HEX = "${BUILD}/${STAGING_NAME}.ino.mega.hex"
 	DISTNAME=$(date '+%Y%m%d_%H%M')
 	
 	# clear build directory
@@ -90,14 +90,14 @@ else
 		# generate variant
 		header "${STAGING_BUILD}" "${i}"
 		
-		arduino --pref build.path=$BUILD --board arduino:avr:mega:cpu=atmega2560 --verify STAGING_BUILD_INO
+		arduino --pref build.path=$BUILD --board arduino:avr:mega:cpu=atmega2560 STAGING_BUILD_INO
 		
 		# check for marlin
-		if [ -f $STAGING_BUILD_HEX ]; then
-			cp -f $STAGING_BUILD_HEX "${OUTPUT}/${VARIANT[$i]}_${DISTNAME}_mega.hex"
+		if [ -f $SBUILD_HEX ]; then
+			cp "${BUILD_HEX}" "${OUTPUT}/${VARIANT[$i]}_${DISTNAME}_mega.hex"
 		fi
 
 	done
 	
-	ls
+	ls $OUTPUT
 fi
