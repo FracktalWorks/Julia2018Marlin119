@@ -48,7 +48,7 @@ for (let i = 0; i < variants.length; i++) {
 */
 
 // Make intermediate dir if not exists
-mkdirne( dir_staging );
+// mkdirne( dir_staging );
 
 // Make output dir if not exists
 mkdirne( dir_output );

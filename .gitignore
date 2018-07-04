@@ -3,6 +3,8 @@ intermediate/*
 staging/*
 output/*
 bkp
+src/common/_Version.h
+src/common/_FracktalWorks.h
 
 # Logs
 logs

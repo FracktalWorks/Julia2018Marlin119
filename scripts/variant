@@ -1,0 +1,103 @@
+#!/usr/bin/env bash
+# variant
+
+declare -a VARIANT=("JULIA_2018_GLCD" "JULIA_2018_GLCD_HB" "JULIA_2018_RPI" "JULIA_2018_RPI_E")
+declare -a SHORT_VARIANT=("J18GX" "J18GB" "J18RX" "J18RE")
+declare -a MACHINE_NAME=("Julia 2018 Basic" "Julia 2018 Intermediate" "Julia 2018 Advanced" "Julia 2018 Extended")
+
+if [ -z "${TRAVIS}" ] 
+then
+	echo "Fracktal Works Marlin Version and variant Generator"
+	echo " "
+	echo " Parameters:"
+	echo " 1: JULIA_2018_GLCD"
+	echo " 2: JULIA_2018_GLCD_HB"
+	echo " 3: JULIA_2018_RPI"
+	echo " 4: JULIA_2018_RPI_E"
+	echo " "
+fi
+
+# Directories
+STAGING_NAME="Julia2018Marlin"																# staging name
+CWD="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"				# CWD
+ROOT="${CWD}/.."																							# CWD
+SRC="${ROOT}/src"
+SRC_MARLIN="${SRC}/Marlin/Marlin"
+SRC_MARLIN_INO="${SRC}/Marlin/Marlin/Marlin.ino"
+SRC_COMMON="${SRC}/common"
+STAGING="${ROOT}/staging"
+STAGING_BUILD="${STAGING}/${STAGING_NAME}"
+STAGING_MARLIN_INO="${STAGING_BUILD}/Marlin.ino"
+STAGING_BUILD_INO="${STAGING_BUILD}/${STAGING_NAME}.ino"
+BUILD="${ROOT}/build"
+OUTPUT="${ROOT}/output"
+
+# check for marlin
+if [ ! -f $SRC_MARLIN_INO ]; then
+	echo "Marlin not found"
+	exit 1
+fi
+
+#check for source
+if [ ! -d $SRC_COMMON ]; then
+	echo "Source not found"
+	exit 1
+fi
+
+# clear staging directory
+rm -rfv "${STAGING}/*"
+# make staging build dir
+mkdir -p $STAGING_BUILD
+
+# copy marlin files
+cp -Rf $SRC_MARLIN/* $STAGING_BUILD/
+# overwrite marlin files with source
+cp -Rf $SRC_COMMON/* $STAGING_BUILD/
+# rename marlin ino in staging build
+mv $STAGING_MARLIN_INO $STAGING_BUILD_INO
+
+if [ -z "${TRAVIS}" ]; then
+	P1=$1-1
+	
+	if [[ -z "$1" ]];	then
+		exit 1
+	fi
+
+	if [[ $1 -lt 1 || $1 -gt 4 ]]; then
+		echo "Invalid parameters"
+		exit 1
+	fi
+	
+	# generate variant
+	./scripts/header "${STAGING_BUILD}" "${P1}"
+	# start cmd "/k node index.js"
+else
+	STAGING_BUILD_HEX = "${STAGING_BUILD_INO}.mega.hex"
+	DISTNAME=$(date '+%Y%m%d_%H%M')
+	
+	# clear build directory
+	rm -rfv "${OUTPUT}/*"
+	# make build dir
+	mkdir -p $OUTPUT
+		
+	for (( i=0; i<4; i++ ))
+	do
+		# clear build directory
+		rm -rfv "${BUILD}/*"
+		# make build dir
+		mkdir -p $BUILD
+		
+		# generate variant
+		header "${STAGING_BUILD}" "${i}"
+		
+		arduino --pref build.path=$BUILD --board arduino:avr:mega:cpu=atmega2560 --verify STAGING_BUILD_INO
+		
+		# check for marlin
+		if [ -f $STAGING_BUILD_HEX ]; then
+			cp -f $STAGING_BUILD_HEX "${OUTPUT}/${VARIANT[$i]}_${DISTNAME}_mega.hex"
+		fi
+
+	done
+	
+	ls
+fi

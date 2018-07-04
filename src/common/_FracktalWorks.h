@@ -6,7 +6,7 @@
 #define JULIA_2018_RPI				2
 #define JULIA_2018_RPI_E			3
 
-#define VARIANT JULIA_2018_GLCD_HB
+#define VARIANT JULIA_2018_GLCD
 
 #ifndef VARIANT
 	#error "Variant not defined"
