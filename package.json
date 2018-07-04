@@ -4,7 +4,7 @@
   "description": "Build automation for Fracktal Works Julia 2018 Marlin",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
+    "start": "./scripts/reversion -- $1 && node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

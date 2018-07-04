@@ -84,16 +84,16 @@ public:
 
 
 /* FRACKTAL WORKS: START */
-  #if ENABLED(POWER_LOSS_RECOVERY)
-		#define RECOVERY_FILE_NAME "FWREC.GCO"
-    void openJobRecoveryFile(const bool read);
-    void closeJobRecoveryFile();
-    bool jobRecoveryFileExists();
-    int16_t saveJobRecoveryInfo();
-    int16_t loadJobRecoveryInfo();
-    void removeJobRecoveryFile();
+  #if ENABLED(PRINT_RESTORE)
+		static const char PrintRestoreGcodeFilename[9];
+		SdFile printRestoreBin;
+    void openPrintRestoreBin(const bool read);
+    void closePrintRestoreBin();
+    bool printRestoreBinExists();
+    int16_t savePrintRestoreInfo();
+    int16_t loadPrintRestoreInfo();
+    void removePrintRestoreBin();
 		bool recoveryFileExists();
-		// const char* getRessurectFileName();
   #endif
 /* FRACKTAL WORKS: END */
 
@@ -175,9 +175,11 @@ private:
 
 
 /* FRACKTAL WORKS: START */
-  #if ENABLED(POWER_LOSS_RECOVERY)
-    SdFile jobRecoveryFile;
+  /*
+	#if ENABLED(PRINT_RESTORE)
+    
   #endif
+	*/
 /* FRACKTAL WORKS: END */
 
   

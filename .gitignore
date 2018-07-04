@@ -1,5 +1,6 @@
 src/Marlin
 intermediate/*
+staging/*
 output/*
 bkp
 

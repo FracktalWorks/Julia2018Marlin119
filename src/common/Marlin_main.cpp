@@ -276,8 +276,8 @@
 
 
 /* FRACKTAL WORKS: START */
-#if ENABLED(POWER_LOSS_RECOVERY)
-  #include "power_loss_recovery.h"
+#if ENABLED(PRINT_RESTORE)
+  #include "print_restore.h"
 #endif
 /* FRACKTAL WORKS: END */
 
@@ -1227,7 +1227,7 @@ inline void get_serial_commands() {
 
 /* FRACKTAL WORKS: START */
 /*
-	#if ENABLED(POWER_LOSS_RECOVERY)
+	#if ENABLED(PRINT_RESTORE)
 
     inline bool drain_job_recovery_commands() {
       static uint8_t job_recovery_commands_index = 0; // Resets on reboot
@@ -1261,10 +1261,10 @@ void get_available_commands() {
 	
 
 /* FRACKTAL WORKS: START */
-	#if ENABLED(POWER_LOSS_RECOVERY)
+	#if ENABLED(PRINT_RESTORE)
     // Commands for power-loss recovery take precedence
     //if (job_recovery_phase == JOB_RECOVERY_YES && drain_job_recovery_commands()) return;
-		// if (restoration_phase == START) return;
+		// if (print_restore_phase == START) return;
   #endif
 /* FRACKTAL WORKS: END */
 
@@ -6987,8 +6987,8 @@ inline void gcode_M17() {
   inline void gcode_M24() {
 
 /* FRACKTAL WORKS: START */
-    #if ENABLED(POWER_LOSS_RECOVERY)
-      // card.removeJobRecoveryFile();
+    #if ENABLED(PRINT_RESTORE)
+      // card.removePrintRestoreBin();
     #endif	
 /* FRACKTAL WORKS: END */
 	
@@ -14766,8 +14766,8 @@ void setup() {
 	
 
 /* FRACKTAL WORKS: START */
-	#if ENABLED(POWER_LOSS_RECOVERY)
-    do_print_job_recovery();
+	#if ENABLED(PRINT_RESTORE)
+    do_print_restore();
   #endif	
 /* FRACKTAL WORKS: END */
 
@@ -14825,8 +14825,8 @@ void loop() {
 	     
 
 /* FRACKTAL WORKS: START */
-				#if ENABLED(POWER_LOSS_RECOVERY)
-          if (card.cardOK && card.sdprinting) save_job_recovery_info();
+				#if ENABLED(PRINT_RESTORE)
+          if (card.cardOK && card.sdprinting) save_print_restore_info();
         #endif
 /* FRACKTAL WORKS: END */
 			

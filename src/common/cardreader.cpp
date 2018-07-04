@@ -31,8 +31,9 @@
 #include "language.h"
 
 /* FRACKTAL WORKS: START */
-#if ENABLED(POWER_LOSS_RECOVERY)
-  #include "power_loss_recovery.h"
+#if ENABLED(PRINT_RESTORE)
+  #include "print_restore.h"
+	const char CardReader::PrintRestoreGcodeFilename[9] = "FWPR.GCO";
 #endif
 /* FRACKTAL WORKS: END */
 
@@ -374,14 +375,20 @@ void CardReader::openFile(char* name, const bool read, const bool subcall/*=fals
     serialprintPGM(doing == 1 ? PSTR("doing") : PSTR("fresh"));
     SERIAL_ECHOLNPAIR(" file: ", name);
 		
-			// if (strcmp(strupr(RECOVERY_FILE_NAME), strupr(name)) == 0) {
-			if (strstr(strupr(name), strupr(RECOVERY_FILE_NAME))) {
-				restoration_phase = START;
+
+/* FRACKTAL WORKS: START */
+		#if ENABLED(PRINT_RESTORE)
+			// if (strcmp(strupr(PrintRestoreGcodeFilename), strupr(name)) == 0) {
+			if (strstr(strupr(name), strupr(PrintRestoreGcodeFilename))) {
+				print_restore_phase = START;
 				SERIAL_ECHOLN("Recovery file confirmed.");
 			} else {
-				restoration_phase = IDLE;
+				print_restore_phase = IDLE;
 				SERIAL_ECHOLN("Not recovery file.");
 			}
+		#endif
+/* FRACKTAL WORKS: END */
+
   }
 
 
@@ -910,11 +917,11 @@ void CardReader::printingHasFinished() {
     sdprinting = false;
     
 /* FRACKTAL WORKS: START */
-		#if ENABLED(POWER_LOSS_RECOVERY)
-      openJobRecoveryFile(false);
-      job_recovery_info.valid_head = job_recovery_info.valid_foot = 0;
-      saveJobRecoveryInfo();
-      closeJobRecoveryFile();
+		#if ENABLED(PRINT_RESTORE)
+      openPrintRestoreBin(false);
+      print_restore_info.valid_head = print_restore_info.valid_foot = 0;
+      savePrintRestoreInfo();
+      closePrintRestoreBin();
       //job_recovery_commands_count = 0;
     #endif
 /* FRACKTAL WORKS: END */
@@ -937,14 +944,15 @@ void CardReader::printingHasFinished() {
 
 
 /* FRACKTAL WORKS: START */
-#if ENABLED(POWER_LOSS_RECOVERY)
-
+#if ENABLED(PRINT_RESTORE)
+	
+	
   char job_recovery_file_name[4] = "bin";
 
-  void CardReader::openJobRecoveryFile(const bool read) {
+  void CardReader::openPrintRestoreBin(const bool read) {
     if (!cardOK) return;
-    if (jobRecoveryFile.isOpen()) return;
-    if (!jobRecoveryFile.open(&root, job_recovery_file_name, read ? O_READ : O_CREAT | O_WRITE | O_TRUNC | O_SYNC)) {
+    if (printRestoreBin.isOpen()) return;
+    if (!printRestoreBin.open(&root, job_recovery_file_name, read ? O_READ : O_CREAT | O_WRITE | O_TRUNC | O_SYNC)) {
       SERIAL_PROTOCOLPAIR(MSG_SD_OPEN_FILE_FAIL, job_recovery_file_name);
       SERIAL_PROTOCOLCHAR('.');
       SERIAL_EOL();
@@ -953,27 +961,27 @@ void CardReader::printingHasFinished() {
       SERIAL_PROTOCOLLNPAIR(MSG_SD_WRITE_TO_FILE, job_recovery_file_name);
   }
 
-  void CardReader::closeJobRecoveryFile() { jobRecoveryFile.close(); }
+  void CardReader::closePrintRestoreBin() { printRestoreBin.close(); }
 
-  bool CardReader::jobRecoveryFileExists() {
-    return jobRecoveryFile.open(&root, job_recovery_file_name, O_READ);
+  bool CardReader::printRestoreBinExists() {
+    return printRestoreBin.open(&root, job_recovery_file_name, O_READ);
   }
 
-  int16_t CardReader::saveJobRecoveryInfo() {
-    jobRecoveryFile.seekSet(0);
-    const int16_t ret = jobRecoveryFile.write(&job_recovery_info, sizeof(job_recovery_info));
+  int16_t CardReader::savePrintRestoreInfo() {
+    printRestoreBin.seekSet(0);
+    const int16_t ret = printRestoreBin.write(&print_restore_info, sizeof(print_restore_info));
     if (ret == -1) SERIAL_PROTOCOLLNPGM("Recovery BIN write failed.");
     return ret;
   }
 
-  int16_t CardReader::loadJobRecoveryInfo() {
-    return jobRecoveryFile.read(&job_recovery_info, sizeof(job_recovery_info));
+  int16_t CardReader::loadPrintRestoreInfo() {
+    return printRestoreBin.read(&print_restore_info, sizeof(print_restore_info));
   }
 
-  void CardReader::removeJobRecoveryFile() {
-		if (!jobRecoveryFileExists()) return;
+  void CardReader::removePrintRestoreBin() {
+		if (!printRestoreBinExists()) return;
 		
-    if (jobRecoveryFile.remove(&root, job_recovery_file_name))
+    if (printRestoreBin.remove(&root, job_recovery_file_name))
       SERIAL_PROTOCOLLNPGM("Recovery BIN deleted.");
     else
       SERIAL_PROTOCOLLNPGM("Recovery BIN delete failed.");
@@ -994,7 +1002,7 @@ void CardReader::printingHasFinished() {
 			return true;
 		}
 		
-		if (recoveryFile.open(&root, RECOVERY_FILE_NAME, true)) {
+		if (recoveryFile.open(&root, PrintRestoreGcodeFilename, true)) {
 			recoveryFile.close();
 			return true;
 		}
@@ -1003,6 +1011,6 @@ void CardReader::printingHasFinished() {
   }
 /* FRACKTAL WORKS: END */
 
-#endif // POWER_LOSS_RECOVERY
+#endif // PRINT_RESTORE
 
 #endif // SDSUPPORT

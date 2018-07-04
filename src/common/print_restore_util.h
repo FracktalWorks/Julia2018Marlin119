@@ -1,5 +1,5 @@
-#ifndef POWER_PANIC_UTIL_H
-#define POWER_PANIC_UTIL_H
+#ifndef _PRINT_RESTORE_UTIL_H
+#define _PRINT_RESTORE_UTIL_H
 
 /*	
 	char *ftostr31(const float &x);

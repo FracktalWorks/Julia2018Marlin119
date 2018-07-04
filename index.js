@@ -18,7 +18,7 @@ function cdir(d) { fs.emptyDirSync(d); }
 
 const  pwd = __dirname;
 const dir_src = path.join( pwd, "src" );
-const dir_intermediate = path.join( pwd, "intermediate" );
+const dir_staging = path.join( pwd, "staging" );
 const dir_output = path.join( pwd, "output" );
 const dir_src_common = path.join( dir_src, "common" );
 const dir_src_marlin = path.join( dir_src, "Marlin", "Marlin" );
@@ -34,6 +34,7 @@ if ( !fs.existsSync(dir_src_marlin) ) {
     return;
 }
 
+/*
 // Check for variant sources
 for (let i = 0; i < variants.length; i++) {
     temp = path.join(dir_src, variants[i]);
@@ -44,13 +45,15 @@ for (let i = 0; i < variants.length; i++) {
         return;
     }
 }
+*/
 
 // Make intermediate dir if not exists
-mkdirne( dir_intermediate );
+mkdirne( dir_staging );
 
 // Make output dir if not exists
 mkdirne( dir_output );
 
+/*
 // Show variant choice
 const build_option = readlineSync.keyInSelect(variants, "Build variant");
 if (build_option == -1) {
@@ -58,41 +61,46 @@ if (build_option == -1) {
 	p();
     return;
 }
+*/
 
 
 // Generate variant path
-const build_variant = variants[build_option];
-const dir_src_variant = path.join(dir_src, build_variant);
-const dir_intermediate_variant = path.join(dir_intermediate, build_variant);
-const file_ino = build_variant + ".ino";
-const path_ino = path.join(dir_intermediate_variant, file_ino);
+const staging_name = "Julia2018Marlin"; //variants[build_option];
+// const dir_src_variant = path.join(dir_src, staging_name);
+const dir_staging_name = path.join(dir_staging, staging_name);
+const file_ino = staging_name + ".ino";
+const path_ino = path.join(dir_staging_name, file_ino);
 const path_hex = path_ino + ".mega.hex";
 
-m(dir_src_variant);
-m(dir_intermediate_variant);
+// m(dir_src_variant);
+m(dir_staging_name);
 m(path_ino);
 m(path_hex);
 
 
 // Clear intermediate dir
-cdir( dir_intermediate );
+cdir( dir_staging );
 
 // Make intermediate dir for variant
-mkdirne( dir_intermediate_variant );
+mkdirne( dir_staging_name );
 
+/*
 // Copy Marlin files to intermediate
-fs.copySync( dir_src_marlin, dir_intermediate_variant, { "overwrite": true } );
+fs.copySync( dir_src_marlin, dir_staging_name, { "overwrite": true } );
 
 // Copy common files to intermediate, if exists
 if ( fe (dir_src_common) ) {
-	fs.copySync( dir_src_common, dir_intermediate_variant, { "overwrite": true } );
+	fs.copySync( dir_src_common, dir_staging_name, { "overwrite": true } );
 }
 
-// Rename Marlin.ino to build_variant
-fs.renameSync( path.join(dir_intermediate_variant, "Marlin.ino"), path_ino);
+// Rename Marlin.ino to staging_name
+fs.renameSync( path.join(dir_staging_name, "Marlin.ino"), path_ino);
+*/
 
+/*
 // Copy variant files to intermediate
-fs.copySync( dir_src_variant, dir_intermediate_variant, { "overwrite": true } );
+fs.copySync( dir_src_variant, dir_staging_name, { "overwrite": true } );
+*/
 
 // Open ino file
 exec( path_ino );
@@ -117,10 +125,10 @@ function onFileEvent(filePath) {
 		m(" " + moment().format("DD-MM-YYYY HH:mm:ss") + " Changed: " + filePath);
 		
 		if ( filePath.indexOf(".hex") < 0 ) {
-			// fs.copySync( filePath, dir_intermediate_variant, { "overwrite": true } );
-			copyData( filePath, path.join(dir_intermediate_variant, path.basename( filePath )) );
+			// fs.copySync( filePath, dir_staging_name, { "overwrite": true } );
+			copyData( filePath, path.join(dir_staging_name, path.basename( filePath )) );
 		} else {
-			const path_hex_dest = path.join( dir_output, build_variant + "_mega_" + moment().format("DDMMYYYY_HHmmss") + ".hex");
+			const path_hex_dest = path.join( dir_output, staging_name + "_mega_" + moment().format("DDMMYYYY_HHmmss") + ".hex");
 			fs.copySync( filePath, path_hex_dest, { "overwrite": true } );
 		}
 	} catch(ex) {
@@ -128,7 +136,7 @@ function onFileEvent(filePath) {
 	}
 }
 
-const watcher = chokidar.watch( [dir_src_variant, dir_src_common, path_hex] , { "persistent": true, "ignoreInitial": true } );
+const watcher = chokidar.watch( [ /*dir_src_variant, */ dir_src_common, path_hex] , { "persistent": true, "ignoreInitial": true } );
 watcher.on('add', onFileEvent);
 watcher.on('change', onFileEvent);
 // watcher.on('unlink', onFileEvent);

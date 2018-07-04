@@ -21,19 +21,18 @@
  */
 
 /**
- * power_loss_recovery.h - Resume an SD print after power-loss
+ * print_restore.h - Resume an SD print after board reset
  */
 
-#ifndef _POWER_LOSS_RECOVERY_H_
-#define _POWER_LOSS_RECOVERY_H_
+#ifndef _PRINT_RESTORE_H_
+#define _PRINT_RESTORE_H_
 
 #include "cardreader.h"
 #include "types.h"
 #include "MarlinConfig.h"
 
-//#define DEBUG_POWER_LOSS_RECOVERY
+//#define DEBUG_PRINT_RESTORE
 
-// #define RECOVERY_CODE_FILE "RESR.GCODE"
 
 typedef struct {
   uint8_t valid_head;
@@ -65,39 +64,20 @@ typedef struct {
   uint8_t valid_foot;
 	
 	char sd_filename[MAXPATHNAMELENGTH];
-} job_recovery_info_t;
+} print_restore_info_t;
 
-extern job_recovery_info_t job_recovery_info;
+extern print_restore_info_t print_restore_info;
 
-/*
-enum JobRecoveryPhase : unsigned char {
-  JOB_RECOVERY_IDLE,
-  JOB_RECOVERY_MAYBE,
-  JOB_RECOVERY_YES
-};
-extern JobRecoveryPhase job_recovery_phase;
-*/
-
-enum RestorationPhase : unsigned char {
+enum PrintRestorePhase : unsigned char {
   IDLE,
   BIN_FOUND,
   FILE_MADE,
   LCD_MAYBE,
 	START
 };
-extern RestorationPhase restoration_phase;
+extern PrintRestorePhase print_restore_phase;
 
+void do_print_restore();
+void save_print_restore_info();
 
-//#define APPEND_CMD_COUNT HOTENDS + FAN_COUNT + 15
-
-/* FRACKTAL WORKS: START */
-//extern char job_recovery_commands[BUFSIZE + APPEND_CMD_COUNT][MAX_CMD_SIZE];
-//extern uint8_t job_recovery_commands_count;
-//extern bool job_recovery_found;
-/* FRACKTAL WORKS: END */
-
-
-void do_print_job_recovery();
-void save_job_recovery_info();
-
-#endif // _POWER_LOSS_RECOVERY_H_
+#endif // _PRINT_RESTORE_H_
