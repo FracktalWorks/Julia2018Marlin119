@@ -1,48 +1,69 @@
 #!/usr/bin/env bash
 
+PROJECT_NAME="Julia2018Marlin"
+DIST_NAME=$(date '+%Y%m%d_%H%M')
+declare -a VARIANT=("JULIA_2018_GLCD" "JULIA_2018_GLCD_HB" "JULIA_2018_RPI" "JULIA_2018_RPI_E")
+
+# static paths
+SRC="${TRAVIS_BUILD_DIR}/src"
+SRC_MARLIN="${SRC}/Marlin/Marlin"
+SRC_COMMON="${SRC}/common"
+STAGING_SUB="${TRAVIS_BUILD_DIR}/staging/${PROJECT_NAME}"
+STAGING_SUB_INO="${STAGING_SUB}/${PROJECT_NAME}.ino"
+OUTPUT="${TRAVIS_BUILD_DIR}/output"
+
 # check for marlin
-if [ ! -f "$TRAVIS_BUILD_DIR/src/Marlin/Marlin/Marlin.ino" ]; then
+if [ ! -f "${SRC_MARLIN}/Marlin.ino" ]; then
 	echo "Marlin not found"
 	exit 1
 fi
 
 #check for source
-if [ ! -d "$TRAVIS_BUILD_DIR/src/common" ]; then
+if [ ! -d "${SRC_COMMON}" ]; then
 	echo "Source not found"
 	exit 1
 fi
 
-# clear staging directory
-rm -rfv "$TRAVIS_BUILD_DIR/staging/*"
 # make staging build dir
-mkdir -p "$TRAVIS_BUILD_DIR/staging/Julia2018Marlin"
+mkdir -p "${STAGING_SUB}"
 
 # copy marlin files
-cp -Rf "$TRAVIS_BUILD_DIR/src/Marlin/Marlin/*" "$TRAVIS_BUILD_DIR/staging/Julia2018Marlin/"
+cp -Rf "${SRC_MARLIN}/*" "${STAGING_SUB}/"
 # overwrite marlin files with source
-cp -Rf "$TRAVIS_BUILD_DIR/src/common/*" "$TRAVIS_BUILD_DIR/staging/Julia2018Marlin/"
+cp -Rf "${SRC_COMMON}/*" "${STAGING_SUB}/"
 # rename marlin ino in staging build
-mv "$TRAVIS_BUILD_DIR/staging/Julia2018Marlin/Marlin.ino" "$TRAVIS_BUILD_DIR/staging/Julia2018Marlin/Julia2018Marlin.ino"
+mv "${STAGING_SUB}/Marlin.ino" "${STAGING_SUB_INO}"
 
-
-# make build dir
-mkdir -p "$TRAVIS_BUILD_DIR/build"
 # make output dir
-mkdir -p "$TRAVIS_BUILD_DIR/output"
-# set arduino output dir
-arduino --pref build.path="$TRAVIS_BUILD_DIR/build" --board arduino:avr:mega:cpu=atmega2560 --save-prefs
+mkdir -p "${OUTPUT}"
 
 for (( i=0; i<4; i++ )); do
-	# clear build directory
-	rm -rfv "$TRAVIS_BUILD_DIR/build/*"
+	# dynamic paths
+	BUILD_I="${TRAVIS_BUILD_DIR}/build_${i}"
+	BUILD_I_HEX="${BUILD_I}/${PROJECT_NAME}.ino.hex"
+	OUTPUT_HEX="${OUTPUT}/${VARIANT[$i]}_${DIST_NAME}_mega.hex"
+	# make build dir
+	mkdir -p "${BUILD_I}"
+	# set arduino build dir
+	eval "arduino --pref build.path=\"${BUILD_I}\" --board arduino:avr:mega:cpu=atmega2560 --save-prefs"
+	RET1=$?
+	if [ $RET1 -ne 0 ]; then
+		echo "Arduino CLI error setting build preferences"
+		exit RET1
+	fi
 	# generate variant
-	header "$TRAVIS_BUILD_DIR/staging/Julia2018Marlin" ${i}
+	header "${STAGING_SUB}" ${i}
 	# compile INO
-	arduino --verify "$TRAVIS_BUILD_DIR/staging/Julia2018Marlin/Julia2018Marlin.ino"
+	eval "arduino --verify \"${STAGING_SUB_INO}\""
+	RET2=$?
+	if [ $RET2 -ne 0 ]; then
+		echo "Arduino CLI build failed"
+		exit RET2
+	fi
 	# check for compiled hex
-	if [ -f "$TRAVIS_BUILD_DIR/build/Julia2018Marlin.ino.hex" ]; then
-		cp "$TRAVIS_BUILD_DIR/build/Julia2018Marlin.ino.hex" "$TRAVIS_BUILD_DIR/output/${VARIANT[$i]}_$(date '+%Y%m%d_%H%M')_mega.hex"
+	if [ -f "${BUILD_I_HEX}" ]; then
+		cp "${BUILD_I_HEX}" "${OUTPUT_HEX}"
 	fi
 done
 
-ls "$TRAVIS_BUILD_DIR/output"
+ls "${OUTPUT}"
