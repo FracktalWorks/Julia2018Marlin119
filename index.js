@@ -18,96 +18,41 @@ function cdir(d) { fs.emptyDirSync(d); }
 
 const  pwd = __dirname;
 const dir_src = path.join( pwd, "src" );
-const dir_staging = path.join( pwd, "staging" );
-const dir_output = path.join( pwd, "output" );
 const dir_src_common = path.join( dir_src, "common" );
-const dir_src_marlin = path.join( dir_src, "Marlin", "Marlin" );
-const variants = ["Julia18_GLCD", "Julia18_GLCD_HB", "Julia18_RPI", "Julia18_RPI_E"];
 
-s( "Fracktal Works Marlin Build Automation" );
-s( "PWD: " + pwd );
+const staging_name = "Julia2018Marlin";
+const dir_staging = path.join( pwd, "staging", staging_name );
+const dir_output = path.join( pwd, "output" );
 
-// Check for Marlin or Exit
-if ( !fs.existsSync(dir_src_marlin) ) {
-    e( "Marlin not found." );
-    p();
-    return;
-}
-
-/*
-// Check for variant sources
-for (let i = 0; i < variants.length; i++) {
-    temp = path.join(dir_src, variants[i]);
-	
-    if( !fe(temp) ) {
-        e( "Variant source not found: " + variants[i] );
-        p();
-        return;
-    }
-}
-*/
+const path_ino = path.join(dir_staging, staging_name + ".ino");
+const path_hex = path_ino + ".mega.hex";
 
 // Make intermediate dir if not exists
-// mkdirne( dir_staging );
+mkdirne( dir_staging );
 
 // Make output dir if not exists
 mkdirne( dir_output );
 
-/*
-// Show variant choice
-const build_option = readlineSync.keyInSelect(variants, "Build variant");
-if (build_option == -1) {
-    m( "Quitting" );
-	p();
+s( "Fracktal Works Marlin Build Automation" );
+m( "PWD: " + pwd );
+
+// Check for Marlin or Exit
+if ( !fs.existsSync(dir_src_common) ) {
+    e( "Source not found." );
+    p();
     return;
 }
-*/
 
-
-// Generate variant path
-const staging_name = "Julia2018Marlin"; //variants[build_option];
-// const dir_src_variant = path.join(dir_src, staging_name);
-const dir_staging_name = path.join(dir_staging, staging_name);
-const file_ino = staging_name + ".ino";
-const path_ino = path.join(dir_staging_name, file_ino);
-const path_hex = path_ino + ".mega.hex";
-
-// m(dir_src_variant);
-m(dir_staging_name);
-m(path_ino);
-m(path_hex);
-
-
-// Clear intermediate dir
-cdir( dir_staging );
-
-// Make intermediate dir for variant
-mkdirne( dir_staging_name );
-
-/*
-// Copy Marlin files to intermediate
-fs.copySync( dir_src_marlin, dir_staging_name, { "overwrite": true } );
-
-// Copy common files to intermediate, if exists
-if ( fe (dir_src_common) ) {
-	fs.copySync( dir_src_common, dir_staging_name, { "overwrite": true } );
-}
-
-// Rename Marlin.ino to staging_name
-fs.renameSync( path.join(dir_staging_name, "Marlin.ino"), path_ino);
-*/
-
-/*
-// Copy variant files to intermediate
-fs.copySync( dir_src_variant, dir_staging_name, { "overwrite": true } );
-*/
+m("Staging: " + dir_staging);
+m("INO: " + path_ino);
+m("Hex: " + path_hex);
 
 // Open ino file
 exec( path_ino );
-s( "Opening ino file" );
+s( "Opening INO file" );
 
 // Watch src variant dir for changes
-s( "Watching common and variant dir.." );
+s( "Watching source dir.." );
 
 function copyData(srcPath, destPath) {
     fs.readFile(srcPath, function (err, data) {
@@ -125,8 +70,8 @@ function onFileEvent(filePath) {
 		m(" " + moment().format("DD-MM-YYYY HH:mm:ss") + " Changed: " + filePath);
 		
 		if ( filePath.indexOf(".hex") < 0 ) {
-			// fs.copySync( filePath, dir_staging_name, { "overwrite": true } );
-			copyData( filePath, path.join(dir_staging_name, path.basename( filePath )) );
+			// fs.copySync( filePath, dir_staging, { "overwrite": true } );
+			copyData( filePath, path.join(dir_staging, path.basename( filePath )) );
 		} else {
 			const path_hex_dest = path.join( dir_output, staging_name + "_mega_" + moment().format("DDMMYYYY_HHmmss") + ".hex");
 			fs.copySync( filePath, path_hex_dest, { "overwrite": true } );
@@ -136,10 +81,9 @@ function onFileEvent(filePath) {
 	}
 }
 
-const watcher = chokidar.watch( [ /*dir_src_variant, */ dir_src_common, path_hex] , { "persistent": true, "ignoreInitial": true } );
+const watcher = chokidar.watch( [ dir_src_common, path_hex ] , { "persistent": true, "ignoreInitial": true } );
 watcher.on('add', onFileEvent);
 watcher.on('change', onFileEvent);
-// watcher.on('unlink', onFileEvent);
 
 
 function exitHandler() {

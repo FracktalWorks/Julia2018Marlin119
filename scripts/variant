@@ -19,8 +19,13 @@ fi
 
 # Directories
 STAGING_NAME="Julia2018Marlin"																# staging name
-CWD="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"				# CWD
-ROOT="${CWD}/.."																							# CWD
+
+if [ -z "${TRAVIS}" ]; then
+	CWD="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+	ROOT="${CWD}/.."
+else
+	ROOT="${TRAVIS_BUILD_DIR}"
+fi
 SRC="${ROOT}/src"
 SRC_MARLIN="${SRC}/Marlin/Marlin"
 SRC_MARLIN_INO="${SRC}/Marlin/Marlin/Marlin.ino"
@@ -70,7 +75,7 @@ if [ -z "${TRAVIS}" ]; then
 	
 	# generate variant
 	./scripts/header "${STAGING_BUILD}" "${P1}"
-	# start cmd "/k node index.js"
+	start cmd "/k node index.js"
 else
 	BUILD_HEX = "${BUILD}/${STAGING_NAME}.ino.mega.hex"
 	DISTNAME=$(date '+%Y%m%d_%H%M')
@@ -90,7 +95,7 @@ else
 		# generate variant
 		header "${STAGING_BUILD}" "${i}"
 		
-		arduino --pref build.path=$BUILD --board arduino:avr:mega:cpu=atmega2560 STAGING_BUILD_INO
+		arduino --pref build.path="${BUILD}" --board arduino:avr:mega:cpu=atmega2560 "${STAGING_BUILD_INO}"
 		
 		# check for marlin
 		if [ -f $SBUILD_HEX ]; then
