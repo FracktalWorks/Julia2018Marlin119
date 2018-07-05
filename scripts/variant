@@ -102,7 +102,7 @@ else
 		eval "arduino --verify "${STAGING_BUILD_INO}""
 		RET=$?
 		
-		if [ RET -ne 0 ]; then
+		if [ $RET -ne 0 ]; then
 			echo "Arduino build failed"
 			exit RET
 		fi

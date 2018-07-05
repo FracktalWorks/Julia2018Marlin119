@@ -41,7 +41,7 @@
 
 #include "_FracktalWorks.h"
 
-#if !BV(JULIA_2018_GLCD) || !BV(JULIA_2018_GLCD_HB)
+#if BV(JULIA_2018_GLCD) || BV(JULIA_2018_GLCD_HB)
 	#define ADVANCED_PAUSE_FEATURE
 #endif
 
