@@ -81,10 +81,14 @@ else
 	DISTNAME=$(date '+%Y%m%d_%H%M')
 	
 	# clear build directory
-	rm -rfv "${OUTPUT}/*"
+	rm -rfv "${BUILD}/*"
 	# make build dir
+	mkdir -p $BUILD
+	# make output dir
 	mkdir -p $OUTPUT
-		
+	
+	arduino --pref build.path="${BUILD}" --board arduino:avr:mega:cpu=atmega2560 --save-prefs
+
 	for (( i=0; i<4; i++ ))
 	do
 		# clear build directory
@@ -95,7 +99,13 @@ else
 		# generate variant
 		header "${STAGING_BUILD}" "${i}"
 		
-		arduino --pref build.path="${BUILD}" --board arduino:avr:mega:cpu=atmega2560 "${STAGING_BUILD_INO}"
+		eval "arduino --verify "${STAGING_BUILD_INO}""
+		RET=$?
+		
+		if [ RET -ne 0 ]; then
+			echo "Arduino build failed"
+			exit RET
+		fi
 		
 		# check for marlin
 		if [ -f $SBUILD_HEX ]; then
