@@ -30,9 +30,9 @@ ls "${SRC_COMMON}"
 mkdir -p "${STAGING_SUB}"
 
 # copy marlin files
-cp -Rf "${SRC_MARLIN}/*" "${STAGING_SUB}/"
+cp -Rf ${SRC_MARLIN}/* ${STAGING_SUB}/
 # overwrite marlin files with source
-cp -Rf "${SRC_COMMON}/*" "${STAGING_SUB}/"
+cp -Rf ${SRC_COMMON}/* ${STAGING_SUB}/
 # rename marlin ino in staging build
 mv "${STAGING_SUB}/Marlin.ino" "${STAGING_SUB_INO}"
 
@@ -64,7 +64,7 @@ for (( i=0; i<4; i++ )); do
 	fi
 	# check for compiled hex
 	if [ -f "${BUILD_I_HEX}" ]; then
-		cp "${BUILD_I_HEX}" "${OUTPUT_HEX}"
+		cp ${BUILD_I_HEX} ${OUTPUT_HEX}
 	fi
 done
 
