@@ -77,14 +77,14 @@ ls "${OUTPUT_SUB}"
 
 eval "find ${OUTPUT_SUB}/ -maxdepth 1 -type f -name '*.hex' | wc -l"
 RET3=$?
-if [ $RET3 -eq 0 ]; then
+if [ $RET3 -eq "0" ]; then
 	specho 1 "Hex files not generated"
 	exit $RET3
 fi
 specho 2 "Uploading..."
 eval "dbu upload \"${OUTPUT_SUB}\"/ \"${DROPBOX_FOLDER}\"/"
 RET4=$?
-if [ $RET4 -eq 0 ]; then
+if [ $RET4 -ne 0 ]; then
 	specho 1 "Hex files not uploaded"
 	exit $RET4
 fi
