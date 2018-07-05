@@ -24,6 +24,8 @@ if [ ! -d "${SRC_COMMON}" ]; then
 	exit 1
 fi
 
+ls "${SRC_MARLIN}"
+ls "${SRC_COMMON}"
 # make staging build dir
 mkdir -p "${STAGING_SUB}"
 
@@ -49,7 +51,7 @@ for (( i=0; i<4; i++ )); do
 	RET1=$?
 	if [ $RET1 -ne 0 ]; then
 		echo "Arduino CLI error setting build preferences"
-		exit RET1
+		exit $RET1
 	fi
 	# generate variant
 	header "${STAGING_SUB}" ${i}
@@ -58,7 +60,7 @@ for (( i=0; i<4; i++ )); do
 	RET2=$?
 	if [ $RET2 -ne 0 ]; then
 		echo "Arduino CLI build failed"
-		exit RET2
+		exit $RET2
 	fi
 	# check for compiled hex
 	if [ -f "${BUILD_I_HEX}" ]; then
