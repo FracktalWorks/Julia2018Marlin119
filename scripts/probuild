@@ -14,25 +14,27 @@ OUTPUT="${TRAVIS_BUILD_DIR}/output"
 
 # check for marlin
 if [ ! -f "${SRC_MARLIN}/Marlin.ino" ]; then
-	echo "Marlin not found"
+	specho 1 "Marlin not found"
 	exit 1
 fi
 
 #check for source
 if [ ! -d "${SRC_COMMON}" ]; then
-	echo "Source not found"
+	specho 1 "Source not found"
 	exit 1
 fi
 
-ls "${SRC_MARLIN}"
-ls "${SRC_COMMON}"
+
+# ls "${SRC_MARLIN}"
+# ls "${SRC_COMMON}"
+
 # make staging build dir
 mkdir -p "${STAGING_SUB}"
 
 # copy marlin files
-cp -Rf ${SRC_MARLIN}/* ${STAGING_SUB}/
+cp -Rf "${SRC_MARLIN}"/* "${STAGING_SUB}"/
 # overwrite marlin files with source
-cp -Rf ${SRC_COMMON}/* ${STAGING_SUB}/
+cp -Rf "${SRC_COMMON}"/* "${STAGING_SUB}"/
 # rename marlin ino in staging build
 mv "${STAGING_SUB}/Marlin.ino" "${STAGING_SUB_INO}"
 
@@ -50,7 +52,7 @@ for (( i=0; i<4; i++ )); do
 	eval "arduino --pref build.path=\"${BUILD_I}\" --board arduino:avr:mega:cpu=atmega2560 --save-prefs"
 	RET1=$?
 	if [ $RET1 -ne 0 ]; then
-		echo "Arduino CLI error setting build preferences"
+		specho 1 "Arduino CLI error setting build preferences"
 		exit $RET1
 	fi
 	# generate variant
@@ -59,13 +61,23 @@ for (( i=0; i<4; i++ )); do
 	eval "arduino --verify \"${STAGING_SUB_INO}\""
 	RET2=$?
 	if [ $RET2 -ne 0 ]; then
-		echo "Arduino CLI build failed"
+		specho 1 "Arduino CLI build failed"
 		exit $RET2
 	fi
 	# check for compiled hex
 	if [ -f "${BUILD_I_HEX}" ]; then
-		cp ${BUILD_I_HEX} ${OUTPUT_HEX}
+		cp "${BUILD_I_HEX}" "${OUTPUT_HEX}"
+	fi
+done
+specho 2 "ls ${OUTPUT}"
+ls "${OUTPUT}"
+specho 2 "Uploading..."
+for i in "${OUTPUT}"/*; do
+	if [ "${i}" != "${i%.hex}" ]; then
+		specho 3 " $i"
 	fi
 done
 
-ls "${OUTPUT}"
+specho 2 "Done!"
+
+exit 0

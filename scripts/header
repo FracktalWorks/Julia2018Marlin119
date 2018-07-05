@@ -11,7 +11,11 @@ SBV1=$(date '+%y%m%d_%H%M')
 SHORT_BUILD_VERSION=$(echo "${SHORT_VARIANT[$2]}_${SBV1^^}")
 DETAILED_BUILD_VERSION=$(echo "${SHORT_BUILD_VERSION}_HA")
 
-echo "Generating build for version ${DETAILED_BUILD_VERSION}"
+if [ -z "${TRAVIS}" ]; then
+	echo "Generating build for version ${DETAILED_BUILD_VERSION}"
+else
+	specho 3 "Building ${DETAILED_BUILD_VERSION}"
+fi
 
 cat > "$1/_Version.h" <<EOF
 /**
