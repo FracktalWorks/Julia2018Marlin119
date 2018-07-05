@@ -77,7 +77,7 @@ if [ -z "${TRAVIS}" ]; then
 	./scripts/header "${STAGING_BUILD}" "${P1}"
 	start cmd "/k node index.js"
 else
-	BUILD_HEX="${BUILD}/${STAGING_NAME}.ino.mega.hex"
+	BUILD_HEX="${BUILD}/${STAGING_NAME}.ino.hex"
 	DISTNAME=$(date '+%Y%m%d_%H%M')
 	
 	# clear build directory

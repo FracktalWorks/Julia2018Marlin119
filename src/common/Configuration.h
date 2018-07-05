@@ -162,7 +162,9 @@
 #define EEPROM_SETTINGS // Enable for M500 and M501 commands
 #define NOZZLE_PARK_FEATURE
 #define PRINTCOUNTER
-#define PRINT_RESTORE		// print restore
+#if BV(JULIA_2018_GLCD) || BV(JULIA_2018_GLCD_HB)
+	#define PRINT_RESTORE		// print restore
+#endif
 
 //===========================================================================
 //===================== End of Fracktal Works Julia 2018 ====================
