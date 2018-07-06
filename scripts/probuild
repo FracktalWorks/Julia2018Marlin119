@@ -83,7 +83,7 @@ fi
 specho 2 "Uploading..."
 eval "dbu upload \"${OUTPUT_SUB}\"/ \"${DROPBOX_FOLDER}\"/"
 RET3=$?
-if [ $RET3 -ne 0 ]; then
+if [ $RET3 -eq 0 ]; then
 	specho 1 "Hex files not uploaded"
 	exit $RET3
 fi
