@@ -75,18 +75,17 @@ done
 specho 2 "ls ${OUTPUT_SUB}"
 ls "${OUTPUT_SUB}"
 
-eval "find ${OUTPUT_SUB}/ -maxdepth 1 -type f -name '*.hex' | wc -l"
-RET3=$?
-if [ "${RET3}" == "0" ]; then
+HEX_COUNT=$(find ${OUTPUT_SUB}/ -maxdepth 1 -type f -name '*.hex' | wc -l)
+if [ $HEX_COUNT -eq 0 ]; then
 	specho 1 "Hex files not generated"
-	exit $RET3
+	exit $HEX_COUNT
 fi
 specho 2 "Uploading..."
 eval "dbu upload \"${OUTPUT_SUB}\"/ \"${DROPBOX_FOLDER}\"/"
-RET4=$?
-if [ $RET4 -ne 0 ]; then
+RET3=$?
+if [ $RET3 -ne 0 ]; then
 	specho 1 "Hex files not uploaded"
-	exit $RET4
+	exit $RET3
 fi
 # for i in "${OUTPUT}"/*; do
 	# if [ "${i}" != "${i%.hex}" ]; then
