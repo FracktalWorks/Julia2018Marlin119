@@ -276,6 +276,7 @@
 
 
 /* FRACKTAL WORKS: START */
+// PRINT RESTORE
 #if ENABLED(PRINT_RESTORE)
   #include "print_restore.h"
 #endif
@@ -405,7 +406,11 @@ static long gcode_N, gcode_LastN, Stopped_gcode_LastN = 0;
  */
 uint8_t commands_in_queue = 0; // Count of commands in the queue
 
+
 /* FRACKTAL WORKS: START */
+// PRINT RESTORE
+
+// make command buffer writable
 //static uint8_t cmd_queue_index_r = 0, // Ring buffer read position
 uint8_t cmd_queue_index_r = 0, // Ring buffer read position
         cmd_queue_index_w = 0; // Ring buffer write position
@@ -414,7 +419,7 @@ uint8_t cmd_queue_index_r = 0, // Ring buffer read position
 #if ENABLED(M100_FREE_MEMORY_WATCHER)
   char command_queue[BUFSIZE][MAX_CMD_SIZE];  // Necessary so M100 Free Memory Dumper can show us the commands and any corruption
 #else                                         // This can be collapsed back to the way it was soon.
-static char command_queue[BUFSIZE][MAX_CMD_SIZE];
+  static char command_queue[BUFSIZE][MAX_CMD_SIZE];
 #endif
 */
 
@@ -1224,26 +1229,6 @@ inline void get_serial_commands() {
     }
   }
 
-
-/* FRACKTAL WORKS: START */
-/*
-	#if ENABLED(PRINT_RESTORE)
-
-    inline bool drain_job_recovery_commands() {
-      static uint8_t job_recovery_commands_index = 0; // Resets on reboot
-      if (job_recovery_commands_count) {
-        if (_enqueuecommand(job_recovery_commands[job_recovery_commands_index])) {
-          ++job_recovery_commands_index;
-          if (!--job_recovery_commands_count) job_recovery_phase = JOB_RECOVERY_IDLE;
-        }
-        return true;
-      }
-      return false;
-    }
-
-  #endif
-	*/
-/* FRACKTAL WORKS: END */
 #endif // SDSUPPORT
 
 /**
@@ -1258,16 +1243,6 @@ void get_available_commands() {
   if (drain_injected_commands_P()) return;
 
   get_serial_commands();
-	
-
-/* FRACKTAL WORKS: START */
-	#if ENABLED(PRINT_RESTORE)
-    // Commands for power-loss recovery take precedence
-    //if (job_recovery_phase == JOB_RECOVERY_YES && drain_job_recovery_commands()) return;
-		// if (print_restore_phase == START) return;
-  #endif
-/* FRACKTAL WORKS: END */
-
 
   #if ENABLED(SDSUPPORT)
     get_sdcard_commands();
@@ -4294,6 +4269,10 @@ void home_all_axes() { gcode_G28(true); }
    *  v Y-axis  1-n
    *
    */
+
+
+/* FRACKTAL WORKS: START */
+// BED LEVELING
    /*
   inline void gcode_G29() {
 
@@ -4324,12 +4303,12 @@ void home_all_axes() { gcode_G28(true); }
         mbl.reset();
         mbl_probe_index = 0;
         enqueue_and_echo_commands_P(lcd_wait_for_move ? PSTR("G29 S2") : PSTR("G28\nG29 S2"));
-		
-		// Fracktal: ZMAX endstop fix
-		current_position[Z_AXIS] = Z_MIN_POS;
-		buffer_line_to_current_position();
-        
-		break;
+      
+        // Fracktal: ZMAX endstop fix
+        current_position[Z_AXIS] = Z_MIN_POS;
+        buffer_line_to_current_position();
+            
+        break;
 
       case MeshNext:
         if (mbl_probe_index < 0) {
@@ -4360,13 +4339,13 @@ void home_all_axes() { gcode_G28(true); }
             // If G29 is not completed, they will not be re-enabled
             soft_endstops_enabled = false;
           #endif
-		  
-			// Move close to the bed for the first point
-			if (!mbl_probe_index) {
-				current_position[Z_AXIS] = Z_MIN_POS;
-				buffer_line_to_current_position();
-			}
-			
+          
+          // Move close to the bed for the first point
+          if (!mbl_probe_index) {
+            current_position[Z_AXIS] = Z_MIN_POS;
+            buffer_line_to_current_position();
+          }
+          
           mbl_probe_index++;
         }
         else {
@@ -4455,7 +4434,6 @@ void home_all_axes() { gcode_G28(true); }
   }
   */
   
-  //FRACKTAL:
   inline void gcode_G29() {
 
     static int mbl_probe_index = -1;
@@ -4475,7 +4453,6 @@ void home_all_axes() { gcode_G28(true); }
       case MeshReport:
         if (leveling_is_valid()) {
           SERIAL_PROTOCOLLNPAIR("State: ", planner.leveling_active ? MSG_ON : MSG_OFF);
-          //mbl.report_mesh();
           mbl_mesh_report();
         }
         else
@@ -4528,7 +4505,6 @@ void home_all_axes() { gcode_G28(true); }
           // One last "return to the bed" (as originally coded) at completion
           current_position[Z_AXIS] = MANUAL_PROBE_HEIGHT;
           buffer_line_to_current_position();
-          //planner.synchronize();
           stepper.synchronize();
 
           // After recording the last point, activate home and activate
@@ -4536,6 +4512,7 @@ void home_all_axes() { gcode_G28(true); }
           SERIAL_PROTOCOLLNPGM("Mesh probing done.");
           BUZZ(100, 659);
           BUZZ(100, 698);
+          mbl.has_mesh = true;
 
           home_all_axes();
           set_bed_leveling_enabled(true);
@@ -4544,7 +4521,7 @@ void home_all_axes() { gcode_G28(true); }
             current_position[Z_AXIS] = 0;
             set_destination_from_current();
             buffer_line_to_destination(homing_feedrate(Z_AXIS));
-            planner.synchronize();
+            stepper.synchronize();
           #endif
 
           #if ENABLED(LCD_BED_LEVELING)
@@ -4601,14 +4578,15 @@ void home_all_axes() { gcode_G28(true); }
 
     } // switch (state)
 
-    if (state == MeshNext) {
-      //SERIAL_PROTOCOLPAIR("MBL G29 point ", MIN(mbl_probe_index, GRID_MAX_POINTS));
+    if ((state == MeshStart || state == MeshNext) && mbl_probe_index >= 0) {
       SERIAL_PROTOCOLPAIR("MBL G29 point ", min(mbl_probe_index, GRID_MAX_POINTS));
       SERIAL_PROTOCOLLNPAIR(" of ", int(GRID_MAX_POINTS));
     }
 
     report_current_position();
   }
+/* FRACKTAL WORKS: END */
+
 
 #elif OLDSCHOOL_ABL
 
@@ -6987,6 +6965,7 @@ inline void gcode_M17() {
   inline void gcode_M24() {
 
 /* FRACKTAL WORKS: START */
+// PRINT RESTORE
     #if ENABLED(PRINT_RESTORE)
       // card.removePrintRestoreBin();
     #endif	
@@ -9921,8 +9900,14 @@ void quickstop_stepper() {
 
     if (to_enable && !new_status) {
       SERIAL_ERROR_START();
+
+/* FRACKTAL WORKS: START */
+// BED LEVELING
+      // show message as error to prevent catch by Octoprint
       // SERIAL_ERRORLNPGM(MSG_ERR_M420_FAILED);
-	  SERIAL_ECHOLNPGM(MSG_ERR_M420_FAILED);
+      SERIAL_ECHOLNPGM(MSG_ERR_M420_FAILED);
+/* FRACKTAL WORKS: END */
+
     }
 
     SERIAL_ECHO_START();
@@ -14766,7 +14751,8 @@ void setup() {
 	
 
 /* FRACKTAL WORKS: START */
-	#if ENABLED(PRINT_RESTORE)
+// PRINT RESTORE
+  #if ENABLED(PRINT_RESTORE)
     do_print_restore();
   #endif	
 /* FRACKTAL WORKS: END */
@@ -14822,15 +14808,16 @@ void loop() {
       }
       else {
         process_next_command();
-	     
 
 /* FRACKTAL WORKS: START */
-				#if ENABLED(PRINT_RESTORE)
-          if (card.cardOK && card.sdprinting) save_print_restore_info();
+// PRINT RESTORE
+        #if ENABLED(PRINT_RESTORE)
+          if (card.cardOK && card.sdprinting) 
+            save_print_restore_info();
         #endif
 /* FRACKTAL WORKS: END */
-			
-			}
+      
+      }
     #else
 
       process_next_command();

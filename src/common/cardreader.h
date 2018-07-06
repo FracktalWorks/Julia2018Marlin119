@@ -84,16 +84,18 @@ public:
 
 
 /* FRACKTAL WORKS: START */
+// PRINT RESTORE
   #if ENABLED(PRINT_RESTORE)
-		static const char PrintRestoreGcodeFilename[9];
-		SdFile printRestoreBin;
+    static const char PrintRestoreGcodeFilename[9];
+    SdFile printRestoreBin;
     void openPrintRestoreBin(const bool read);
     void closePrintRestoreBin();
     bool printRestoreBinExists();
     int16_t savePrintRestoreInfo();
     int16_t loadPrintRestoreInfo();
     void removePrintRestoreBin();
-		bool recoveryFileExists();
+    bool recoveryFileExists();
+    FORCE_INLINE uint32_t getIndex() { return sdpos; }
   #endif
 /* FRACKTAL WORKS: END */
 
@@ -103,11 +105,6 @@ public:
   FORCE_INLINE bool eof() { return sdpos >= filesize; }
   FORCE_INLINE int16_t get() { sdpos = file.curPosition(); return (int16_t)file.read(); }
   FORCE_INLINE void setIndex(long index) { sdpos = index; file.seekSet(index); }
-  
-/* FRACKTAL WORKS: START */
-	FORCE_INLINE uint32_t getIndex() { return sdpos; }
-/* FRACKTAL WORKS: END */
-
   FORCE_INLINE uint8_t percentDone() { return (isFileOpen() && filesize) ? sdpos / ((filesize + 99) / 100) : 0; }
   FORCE_INLINE char* getWorkDirName() { workDir.getFilename(filename); return filename; }
 
@@ -173,16 +170,6 @@ private:
   SdVolume volume;
   SdFile file;
 
-
-/* FRACKTAL WORKS: START */
-  /*
-	#if ENABLED(PRINT_RESTORE)
-    
-  #endif
-	*/
-/* FRACKTAL WORKS: END */
-
-  
   #define SD_PROCEDURE_DEPTH 1
   #define MAXPATHNAMELENGTH (FILENAME_LENGTH*MAX_DIR_DEPTH + MAX_DIR_DEPTH + 1)
   uint8_t file_subcall_ctr;

@@ -31,9 +31,10 @@
 #include "language.h"
 
 /* FRACKTAL WORKS: START */
+// PRINT RESTORE
 #if ENABLED(PRINT_RESTORE)
   #include "print_restore.h"
-	const char CardReader::PrintRestoreGcodeFilename[9] = "FWPR.GCO";
+  const char CardReader::PrintRestoreGcodeFilename[9] = "FWPR.GCO";
 #endif
 /* FRACKTAL WORKS: END */
 
@@ -374,25 +375,23 @@ void CardReader::openFile(char* name, const bool read, const bool subcall/*=fals
     SERIAL_ECHOPGM("Now ");
     serialprintPGM(doing == 1 ? PSTR("doing") : PSTR("fresh"));
     SERIAL_ECHOLNPAIR(" file: ", name);
-		
 
 /* FRACKTAL WORKS: START */
-		#if ENABLED(PRINT_RESTORE)
-			// if (strcmp(strupr(PrintRestoreGcodeFilename), strupr(name)) == 0) {
-			if (strstr(strupr(name), strupr(PrintRestoreGcodeFilename))) {
-				print_restore_phase = START;
-				SERIAL_ECHOLN("Recovery file confirmed.");
-			} else {
-				print_restore_phase = IDLE;
-				SERIAL_ECHOLN("Not recovery file.");
-			}
-		#endif
+// PRINT RESTORE
+  #if ENABLED(PRINT_RESTORE)
+    // if (strcmp(strupr(PrintRestoreGcodeFilename), strupr(name)) == 0) {
+    if (strstr(strupr(name), strupr(PrintRestoreGcodeFilename))) {
+      print_restore_phase = START;
+      SERIAL_ECHOLN("Recovery file confirmed.");
+    } else {
+      print_restore_phase = IDLE;
+      SERIAL_ECHOLN("Not recovery file.");
+    }
+  #endif
 /* FRACKTAL WORKS: END */
 
   }
 
-
-	
   stopSDPrint();
 
   SdFile myDir;
@@ -917,12 +916,12 @@ void CardReader::printingHasFinished() {
     sdprinting = false;
     
 /* FRACKTAL WORKS: START */
-		#if ENABLED(PRINT_RESTORE)
+// PRINT RESTORE
+    #if ENABLED(PRINT_RESTORE)
       openPrintRestoreBin(false);
       print_restore_info.valid_head = print_restore_info.valid_foot = 0;
       savePrintRestoreInfo();
       closePrintRestoreBin();
-      //job_recovery_commands_count = 0;
     #endif
 /* FRACKTAL WORKS: END */
 
@@ -944,9 +943,9 @@ void CardReader::printingHasFinished() {
 
 
 /* FRACKTAL WORKS: START */
+// PRINT RESTORE
 #if ENABLED(PRINT_RESTORE)
-	
-	
+
   char job_recovery_file_name[4] = "bin";
 
   void CardReader::openPrintRestoreBin(const bool read) {
@@ -979,35 +978,29 @@ void CardReader::printingHasFinished() {
   }
 
   void CardReader::removePrintRestoreBin() {
-		if (!printRestoreBinExists()) return;
-		
+    if (!printRestoreBinExists()) return;
+    
     if (printRestoreBin.remove(&root, job_recovery_file_name))
       SERIAL_PROTOCOLLNPGM("Recovery BIN deleted.");
     else
       SERIAL_PROTOCOLLNPGM("Recovery BIN delete failed.");
   }
-	
-	/*
-	const char* CardReader::getRessurectFileName() {
-    return strlwr("resr.gco");
-  }
-	*/
-	
+
 	bool CardReader::recoveryFileExists() {
     SdFile recoveryFile;
-		
-		if (!cardOK) return false;
+    
+    if (!cardOK) return false;
     if (recoveryFile.isOpen()) {
-			recoveryFile.close();
-			return true;
-		}
-		
-		if (recoveryFile.open(&root, PrintRestoreGcodeFilename, true)) {
-			recoveryFile.close();
-			return true;
-		}
-		
-		return false;
+      recoveryFile.close();
+      return true;
+    }
+    
+    if (recoveryFile.open(&root, PrintRestoreGcodeFilename, true)) {
+      recoveryFile.close();
+      return true;
+    }
+    
+    return false;
   }
 /* FRACKTAL WORKS: END */
 
