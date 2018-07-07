@@ -78,8 +78,15 @@
 #define DEFAULT_NOMINAL_FILAMENT_DIA 1.75
 
 /**  Bed dimensions  **/
-#define X_BED_SIZE 210
-#define Z_MAX_POS 210
+#if BV(JULIA_2018_RPI_E)
+	#define X_BED_SIZE 260
+  #define Y_BED_SIZE 250
+  #define Z_MAX_POS 300
+#else
+	#define X_BED_SIZE 210
+  #define Y_BED_SIZE 200
+  #define Z_MAX_POS 210
+#endif
 
 /**  Kinematics  **/
 #define COREXY
@@ -140,10 +147,15 @@
 #define MESH_BED_LEVELING
 //#define ENABLE_LEVELING_FADE_HEIGHT
 #define MESH_TEST_HOTEND_TEMP   210.0   // (°C) Default nozzle temperature for the G26 Mesh Validation Tool.
-#define GRID_MAX_POINTS_X 2
+#if BV(JULIA_2018_RPI_E)
+  #define GRID_MAX_POINTS_X 3
+#else
+  #define GRID_MAX_POINTS_X 2
+#endif
+
 
 #if BV(JULIA_2018_GLCD) || BV(JULIA_2018_GLCD_HB)
-	#define LCD_BED_LEVELING
+  #define LCD_BED_LEVELING
 #endif
 
 
@@ -915,7 +927,7 @@
 
 // The size of the print bed
 // #define X_BED_SIZE 200
-#define Y_BED_SIZE 200
+// #define Y_BED_SIZE 200
 
 // Travel limits (mm) after homing, corresponding to endstop positions.
 #define X_MIN_POS 0

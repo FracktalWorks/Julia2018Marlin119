@@ -221,6 +221,9 @@ void do_print_restore() {
 				print_restore_phase = FILE_MADE;	
 				
 				memset(&print_restore_info, 0, sizeof(print_restore_info));
+        
+        feedrate_percentage = 100;
+        
 				return;
 				
 			} else {

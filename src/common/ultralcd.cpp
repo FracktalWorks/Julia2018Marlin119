@@ -882,7 +882,21 @@ void kill_screen(const char* lcd_msg) {
         card.removeFile(CardReader::PrintRestoreGcodeFilename);
       }
       
-      lcd_sdcard_stop();
+      card.removePrintRestoreBin();
+      /*
+      card.stopSDPrint();
+      clear_command_queue();
+      quickstop_stepper();
+      print_job_timer.stop();
+      thermalManager.disable_all_heaters();
+      #if FAN_COUNT > 0
+        for (uint8_t i = 0; i < FAN_COUNT; i++) fanSpeeds[i] = 0;
+      #endif
+      wait_for_heatup = false;
+      */
+      
+      LCD_MESSAGEPGM(WELCOME_MSG);
+      lcd_return_to_status();
     }
     
     static void lcd_job_recovery_menu() {
@@ -1068,6 +1082,12 @@ void kill_screen(const char* lcd_msg) {
     #endif
 
     if (planner.movesplanned() || IS_SD_PRINTING) {
+
+/* FRACKTAL WORKS: START */
+// Babystep in main menu
+      MENU_ITEM(submenu, "Adjust Z-axis", lcd_babystep_z);
+/* FRACKTAL WORKS: END */
+
       MENU_ITEM(submenu, MSG_TUNE, lcd_tune_menu);
     }
     else {
@@ -1467,6 +1487,11 @@ void kill_screen(const char* lcd_msg) {
     // Babystep Y:
     // Babystep Z:
     //
+    
+
+/* FRACKTAL WORKS: START */
+// Adjust Z during print
+    /*
     #if ENABLED(BABYSTEPPING)
       #if ENABLED(BABYSTEP_XY)
         MENU_ITEM(submenu, MSG_BABYSTEP_X, lcd_babystep_x);
@@ -1478,7 +1503,10 @@ void kill_screen(const char* lcd_msg) {
         MENU_ITEM(submenu, MSG_BABYSTEP_Z, lcd_babystep_z);
       #endif
     #endif
+    */
+/* FRACKTAL WORKS: END */
 
+    
     //
     // Change filament
     //
@@ -2664,6 +2692,8 @@ void kill_screen(const char* lcd_msg) {
     //
     // Level Bed
     //
+/* FRACKTAL WORKS: START */
+    /*
     #if ENABLED(AUTO_BED_LEVELING_UBL)
       MENU_ITEM(submenu, MSG_UBL_LEVEL_BED, _lcd_ubl_level_bed);
     #elif ENABLED(LCD_BED_LEVELING)
@@ -2680,6 +2710,9 @@ void kill_screen(const char* lcd_msg) {
     #elif PLANNER_LEVELING && DISABLED(PROBE_MANUALLY)
       MENU_ITEM(gcode, MSG_BED_LEVELING, PSTR("G28\nG29"));
     #endif
+    */
+/* FRACKTAL WORKS: END */
+
 
     #if ENABLED(LEVEL_BED_CORNERS) && DISABLED(LCD_BED_LEVELING)
       if (axis_homed[X_AXIS] && axis_homed[Y_AXIS] && axis_homed[Z_AXIS])
@@ -3237,6 +3270,7 @@ void kill_screen(const char* lcd_msg) {
     lcd_goto_previous_menu();
     defer_return_to_status = false;
     home_offset[Z_AXIS] = temp_z_home_offset; //restore z offset back
+    (void)settings.save();
   }
   
   void ABL_DoneMessage() {
