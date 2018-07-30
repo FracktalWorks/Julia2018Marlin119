@@ -110,7 +110,7 @@ git remote
 git config user.email ${GITHUB_EMAIL}
 git config user.name ${GITHUB_USER}
 git add .
-git commit -m ${DISTDATE}
+git commit -m "${DISTDATE}"
 git push "https://${GITHUB_TOKEN}@${GH_REPO}" master # > /dev/null 2>&1
 
 
