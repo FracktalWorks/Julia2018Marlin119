@@ -16,11 +16,18 @@ function fe(d) { return fs.existsSync(d); }
 function mkdirne(d) { if ( !fe(d) ) { fs.mkdirSync(d); } }
 function cdir(d) { fs.emptyDirSync(d); }
 
+const args = process.argv.slice(2);
+
+if (args.length != 1) {
+	e("Staging path not specified!");
+	process.exit(1);
+}
+
 const  pwd = __dirname;
 const dir_src = path.join( pwd, "src" );
 const dir_src_common = path.join( dir_src, "common" );
 
-const staging_name = "Julia2018Marlin";
+const staging_name = args[0]; //"Julia2018Marlin";
 const dir_staging = path.join( pwd, "staging", staging_name );
 const dir_output = path.join( pwd, "output" );
 
@@ -43,7 +50,7 @@ if ( !fs.existsSync(dir_src_common) ) {
     return;
 }
 
-m("Staging: " + dir_staging);
+m("STG: " + dir_staging);
 m("INO: " + path_ino);
 m("Hex: " + path_hex);
 
@@ -73,8 +80,8 @@ function onFileEvent(filePath) {
 			// fs.copySync( filePath, dir_staging, { "overwrite": true } );
 			copyData( filePath, path.join(dir_staging, path.basename( filePath )) );
 		} else {
-			const path_hex_dest = path.join( dir_output, staging_name + "_mega_" + moment().format("DDMMYYYY_HHmmss") + ".hex");
-			fs.copySync( filePath, path_hex_dest, { "overwrite": true } );
+			// const path_hex_dest = path.join( dir_output, staging_name + "_mega_" + moment().format("DDMMYYYY_HHmmss") + ".hex");
+			fs.copySync( filePath, dir_output, { "overwrite": true } );
 		}
 	} catch(ex) {
 		e(ex);

@@ -1,0 +1,95 @@
+#!/usr/bin/env bash
+# variant
+
+declare -a VARIANTS=("JULIA_2018_GLCD" "JULIA_2018_GLCD_HB" "JULIA_2018_RPI" "JULIA_2018_RPI_E" "JULIA_2018_PRO_SINGLE" "JULIA_2018_PRO_DUAL")
+declare -a SHORT_VARIANTS=("J18GX" "J18GB" "J18RX" "J18RE" "J18PS" "J18PD")
+declare -a MACHINE_NAMES=("Julia 2018 Basic" "Julia 2018 Intermediate" "Julia 2018 Advanced" "Julia 2018 Extended" "Julia 2018 Pro Single" "Julia 2018 Pro Dual")
+
+if [ -z "${TRAVIS}" ] 
+then
+	echo "Fracktal Works Marlin Build Generator"
+	echo " "
+	echo " Parameters:"
+	echo " 0: JULIA_2018_GLCD"
+	echo " 1: JULIA_2018_GLCD_HB"
+	echo " 2: JULIA_2018_RPI"
+	echo " 3: JULIA_2018_RPI_E"
+	echo " 4: JULIA_2018_PRO_SINGLE"
+	echo " 5: JULIA_2018_PRO_DUAL"
+	echo " "
+fi
+
+if [[ -z "$1" ]];	then
+	exit 1
+fi
+
+if [[ $1 -lt 0 || $1 -gt 5 ]]; then
+	echo "Invalid parameters"
+	exit 1
+fi
+
+SHORT_VARIANT=${SHORT_VARIANTS[$1]}
+MACHINE_NAME=${MACHINE_NAMES[$1]}
+VARIANT=${VARIANTS[$1]}
+
+TIMESTAMP=$(date '+%s')
+DISTDATE=$(date '+%Y-%m-%d %H:%M')
+DATE_STR=$(date '+%y%m%d_%H%M')
+SHORT_BUILD_VERSION=$(echo "${SHORT_VARIANT}")
+DETAILED_BUILD_VERSION=$(echo "${SHORT_BUILD_VERSION}_${DATE_STR}_HA")
+
+CWD="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+ROOT="${CWD}/.."
+SRC="${ROOT}/src"
+SRC_MARLIN="${SRC}/Marlin/Marlin"
+SRC_MARLIN_INO="${SRC}/Marlin/Marlin/Marlin.ino"
+SRC_COMMON="${SRC}/common"
+
+# check for marlin
+if [ ! -f "${SRC_MARLIN_INO}" ]; then
+	echo "Marlin not found"
+	exit 1
+fi
+
+#check for source
+if [ ! -d "${SRC_COMMON}" ]; then
+	echo "Source not found"
+	exit 1
+fi
+
+# Directories
+STAGING_NAME="${DETAILED_BUILD_VERSION}"		# staging name
+
+STAGING="${ROOT}/staging"
+STAGING_BUILD="${STAGING}/${STAGING_NAME}"
+STAGING_MARLIN_INO="${STAGING_BUILD}/Marlin.ino"
+STAGING_BUILD_INO="${STAGING_BUILD}/${STAGING_NAME}.ino"
+BUILD="${ROOT}/build"
+OUTPUT="${ROOT}/output"
+
+
+# clear staging directory
+rm -rfv "${STAGING}"/* &> /dev/null
+# make staging build dir
+mkdir -p "${STAGING_BUILD}"
+
+# copy marlin files
+cp -Rf "${SRC_MARLIN}"/* "${STAGING_BUILD}"/
+# overwrite marlin files with source
+cp -Rf "${SRC_COMMON}"/* "${STAGING_BUILD}"/
+# rename marlin ino in staging build
+mv "${STAGING_MARLIN_INO}" "${STAGING_BUILD_INO}"
+
+# generate variant
+# ./scripts/header "${STAGING_BUILD}" "$1"
+
+# _variant <dir> <variant>
+./scripts/_variant "${STAGING_BUILD}" "${VARIANT}"
+
+# _version <dir> <timestamp> <distdate> <sbv> <dbv> <machine_name>
+./scripts/_version "${STAGING_BUILD}" "${TIMESTAMP}" "${DISTDATE}" "${SHORT_BUILD_VERSION}" "${DETAILED_BUILD_VERSION}" "${MACHINE_NAME}"
+
+# _version <dir> <filename> <variant> <date_str> <distdate>
+./scripts/_marlin "${STAGING_BUILD}" "${STAGING_NAME}" "${VARIANT}" "${DATE_STR}" "${DISTDATE}"
+
+start cmd "/k node watcher.js ${STAGING_NAME}"

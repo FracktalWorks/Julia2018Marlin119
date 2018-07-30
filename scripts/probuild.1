@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
 
 PROJECT_NAME="Julia2018Marlin"
-
-declare -a VARIANTS=("JULIA_2018_GLCD" "JULIA_2018_GLCD_HB" "JULIA_2018_RPI" "JULIA_2018_RPI_E" "JULIA_2018_PRO_SINGLE" "JULIA_2018_PRO_DUAL")
-declare -a SHORT_VARIANTS=("J18GX" "J18GB" "J18RX" "J18RE" "J18PS" "J18PD")
-declare -a MACHINE_NAMES=("Julia 2018 Basic" "Julia 2018 Intermediate" "Julia 2018 Advanced" "Julia 2018 Extended" "Julia 2018 Pro Single" "Julia 2018 Pro Dual")
+DIST_NAME=$(date '+%Y%m%d_%H%M')
+UPLOAD_DIR_NAME=$(date '+%Y_%m_%d_%H%M')
+declare -a VARIANT=("JULIA_2018_GLCD" "JULIA_2018_GLCD_HB" "JULIA_2018_RPI" "JULIA_2018_RPI_E")
 
 # static paths
 SRC="${TRAVIS_BUILD_DIR}/src"
@@ -13,6 +12,7 @@ SRC_COMMON="${SRC}/common"
 STAGING_SUB="${TRAVIS_BUILD_DIR}/staging/${PROJECT_NAME}"
 STAGING_SUB_INO="${STAGING_SUB}/${PROJECT_NAME}.ino"
 OUTPUT="${TRAVIS_BUILD_DIR}/output"
+OUTPUT_SUB="${OUTPUT}/${UPLOAD_DIR_NAME}"
 
 # check for marlin
 if [ ! -f "${SRC_MARLIN}/Marlin.ino" ]; then
@@ -26,6 +26,10 @@ if [ ! -d "${SRC_COMMON}" ]; then
 	exit 1
 fi
 
+
+# ls "${SRC_MARLIN}"
+# ls "${SRC_COMMON}"
+
 # make staging build dir
 mkdir -p "${STAGING_SUB}"
 
@@ -37,24 +41,15 @@ cp -Rf "${SRC_COMMON}"/* "${STAGING_SUB}"/
 mv "${STAGING_SUB}/Marlin.ino" "${STAGING_SUB_INO}"
 
 # make output dir
-mkdir -p "${OUTPUT}"
+mkdir -p "${OUTPUT_SUB}"
 
-for (( i=0; i<6; i++ )); do
-	SHORT_VARIANT=${SHORT_VARIANTS[${i}]}
-	MACHINE_NAME=${MACHINE_NAMES[${i}]}
-	VARIANT=${VARIANTS[${i}]}
-
-	TIMESTAMP=$(date '+%s')
-	DISTDATE=$(date '+%Y-%m-%d %H:%M')
-	DATE_STR=$(date '+%y%m%d_%H%M')
-	SHORT_BUILD_VERSION=$(echo "${SHORT_VARIANT}")
-	DETAILED_BUILD_VERSION=$(echo "${SHORT_BUILD_VERSION}_${DATE_STR}_HA")
-
+for (( i=0; i<4; i++ )); do
 	# dynamic paths
 	BUILD_I="${TRAVIS_BUILD_DIR}/build_${i}"
 	BUILD_I_HEX="${BUILD_I}/${PROJECT_NAME}.ino.hex"
-	OUTPUT_HEX="${OUTPUT}/${SHORT_VARIANT}_mega.hex"
-
+	# OUTPUT_HEX="${OUTPUT}/${VARIANT[$i]}_${DIST_NAME}_mega.hex"
+	OUTPUT_HEX="${OUTPUT_SUB}/${VARIANT[$i]}_mega.hex"
+	DROPBOX_FOLDER="/FW_JULIA2018_MARLIN_HEX"
 	# make build dir
 	mkdir -p "${BUILD_I}"
 	# set arduino build dir
@@ -64,16 +59,8 @@ for (( i=0; i<6; i++ )); do
 		specho 1 "Arduino CLI error setting build preferences"
 		exit $RET1
 	fi
-
-	# _variant <dir> <variant>
-	_variant "${STAGING_SUB}" "${VARIANT}"
-
-	# _version <dir> <timestamp> <distdate> <sbv> <dbv> <machine_name>
-	_version "${STAGING_SUB}" "${TIMESTAMP}" "${DISTDATE}" "${SHORT_BUILD_VERSION}" "${DETAILED_BUILD_VERSION}" "${MACHINE_NAME}"
-
-	# _version <dir> <filename> <variant> <date_str> <distdate>
-	_marlin "${STAGING_SUB}" "${PROJECT_NAME}" "${VARIANT}" "${DATE_STR}" "${DISTDATE}"
-
+	# generate variant
+	header "${STAGING_SUB}" ${i}
 	# compile INO
 	eval "arduino --verify \"${STAGING_SUB_INO}\""
 	RET2=$?
@@ -81,21 +68,31 @@ for (( i=0; i<6; i++ )); do
 		specho 1 "Arduino CLI build failed"
 		exit $RET2
 	fi
-
 	# check for compiled hex
 	if [ -f "${BUILD_I_HEX}" ]; then
 		cp "${BUILD_I_HEX}" "${OUTPUT_HEX}"
 	fi
 done
-specho 2 "ls ${OUTPUT}"
-ls "${OUTPUT}"
+specho 2 "ls ${OUTPUT_SUB}"
+ls "${OUTPUT_SUB}"
 
-HEX_COUNT=$(find "${OUTPUT}"/ -maxdepth 1 -type f -name '*.hex' | wc -l)
+HEX_COUNT=$(find "${OUTPUT_SUB}"/ -maxdepth 1 -type f -name '*.hex' | wc -l)
 if [ $HEX_COUNT -eq 0 ]; then
 	specho 1 "Hex files not generated"
 	exit $HEX_COUNT
 fi
-
+specho 2 "Uploading..."
+eval "dbu upload \"${OUTPUT_SUB}\"/ \"${DROPBOX_FOLDER}\"/"
+RET3=$?
+if [ $RET3 -ne 0 ]; then
+	specho 1 "Hex files not uploaded"
+	exit $RET3
+fi
+# for i in "${OUTPUT}"/*; do
+	# if [ "${i}" != "${i%.hex}" ]; then
+		# specho 3 " $i"
+	# fi
+# done
 
 specho 2 "Done!"
 
