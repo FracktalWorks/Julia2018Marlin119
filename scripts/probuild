@@ -14,6 +14,11 @@ STAGING_SUB="${TRAVIS_BUILD_DIR}/staging/${PROJECT_NAME}"
 STAGING_SUB_INO="${STAGING_SUB}/${PROJECT_NAME}.ino"
 OUTPUT="${TRAVIS_BUILD_DIR}/output"
 
+# dates
+TIMESTAMP=$(date '+%s')
+DISTDATE=$(date '+%Y-%m-%d %H:%M')
+DATE_STR=$(date '+%y%m%d_%H%M')
+
 # check for marlin
 if [ ! -f "${SRC_MARLIN}/Marlin.ino" ]; then
 	specho 1 "Marlin not found"
@@ -44,9 +49,6 @@ for (( i=0; i<6; i++ )); do
 	MACHINE_NAME=${MACHINE_NAMES[${i}]}
 	VARIANT=${VARIANTS[${i}]}
 
-	TIMESTAMP=$(date '+%s')
-	DISTDATE=$(date '+%Y-%m-%d %H:%M')
-	DATE_STR=$(date '+%y%m%d_%H%M')
 	SHORT_BUILD_VERSION=$(echo "${SHORT_VARIANT}")
 	DETAILED_BUILD_VERSION=$(echo "${SHORT_BUILD_VERSION}_${DATE_STR}_HA")
 
@@ -95,6 +97,19 @@ if [ $HEX_COUNT -eq 0 ]; then
 	specho 1 "Hex files not generated"
 	exit $HEX_COUNT
 fi
+
+specho 2 "Uploading to Hex repo"
+REPO="Julia2018MarlinHex"
+GH_REPO="github.com/FracktalWorks/${REPO}.git"
+git clone git://${GH_REPO}
+mv -f "${OUTPUT}"/* ${REPO}
+cd ${REPO}
+git remote
+git config user.email ${GITHUB_EMAIL}
+git config user.name ${GITHUB_USER}
+git add .
+git commit -m ${DATE_STR}
+git push "https://${GITHUB_TOKEN}@${GH_REPO}" master # > /dev/null 2>&1
 
 
 specho 2 "Done!"
