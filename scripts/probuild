@@ -104,6 +104,7 @@ specho 2 "Uploading to Hex repo"
 REPO="Julia2018MarlinHex"
 GH_REPO="github.com/FracktalWorks/${REPO}.git"
 git clone git://${GH_REPO}
+rm -f "${REPO}"/*.hex
 mv -f "${OUTPUT}"/* ${REPO}
 cd ${REPO}
 git remote
