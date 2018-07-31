@@ -104,14 +104,16 @@ specho 2 "Uploading to Hex repo"
 REPO="Julia2018MarlinHex"
 GH_REPO="github.com/FracktalWorks/${REPO}.git"
 git clone git://${GH_REPO}
-rm -f "${REPO}"/*.hex
+# rm -f "${REPO}"/*.hex
+# _info <dir> <distdate>
+_info "${REPO}" "${DISTDATE}"
 mv -f "${OUTPUT}"/* ${REPO}
 cd ${REPO}
 git remote
 git config user.email ${GITHUB_EMAIL}
 git config user.name ${GITHUB_USER}
 git add .
-git commit -m "${DISTDATE}"
+git commit -m "${TRAVIS_COMMIT}:- ${DISTDATE}" -m "${TRAVIS_COMMIT_MESSAGE}"
 git push "https://${GITHUB_TOKEN}@${GH_REPO}" master # > /dev/null 2>&1
 
 
