@@ -80,9 +80,15 @@
 
 
 /**  Stepper  **/
-#define INVERT_X_DIR    false
-#define INVERT_Y_DIR    false
-#define INVERT_Z_DIR    false
+#if BV_PRO()
+  #define INVERT_X_DIR    true
+  #define INVERT_Y_DIR    true
+  #define INVERT_Z_DIR    true
+#else
+  #define INVERT_X_DIR    false
+  #define INVERT_Y_DIR    false
+  #define INVERT_Z_DIR    false
+#endif
 // #define INVERT_E0_DIR   true
 // #define INVERT_E1_DIR   true
 #if BV_PRO()
