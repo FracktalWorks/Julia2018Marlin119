@@ -38,11 +38,11 @@
 
 
 /**  Control board  **/
-#define MOTHERBOARD BOARD_RAMPS_13_EFB
-#define BAUDRATE 115200
+#define MOTHERBOARD   BOARD_RAMPS_13_EFB
+#define BAUDRATE      115200
 
 /**  Filament  **/
-#define DEFAULT_NOMINAL_FILAMENT_DIA 1.75
+#define DEFAULT_NOMINAL_FILAMENT_DIA  1.75
 
 /**  Bed dimensions  **/
 #if BV_REG()
@@ -62,11 +62,6 @@
 /**  Kinematics  **/
 #define COREXY
 
-/**  Enstops  **/
-#define USE_XMIN_PLUG
-#define USE_YMAX_PLUG
-#define USE_ZMAX_PLUG
-
 /**  Movement  **/
 #define DEFAULT_AXIS_STEPS_PER_UNIT   { 160,  160, 1007.874, 280 }
 #define DEFAULT_MAX_FEEDRATE          { 200, 200, 20, 45 }
@@ -78,6 +73,10 @@
 #define DEFAULT_YJERK                 5.0
 #define DEFAULT_ZJERK                 0.4
 
+/**  Enstops  **/
+#define USE_XMIN_PLUG
+#define USE_YMAX_PLUG
+#define USE_ZMAX_PLUG
 
 /**  Stepper  **/
 #if BV_PRO()
@@ -99,17 +98,23 @@
 #endif
 
 /**  Homing  **/
-#define X_HOME_DIR         -1
+#define X_HOME_DIR          -1
 #define Y_HOME_DIR          1
 #define Z_HOME_DIR          1
 #define HOMING_FEEDRATE_Z   (20*60)
 
+
 /**  Thermistor  **/
-#define TEMP_SENSOR_0 3
-#if BV(JULIA_2018_GLCD)
-	#define TEMP_SENSOR_BED 0
+#define TEMP_SENSOR_0       3
+#if BV(JULIA_2018_PRO_DUAL)
+  #define TEMP_SENSOR_1     1
 #else
-	#define TEMP_SENSOR_BED 3
+  #define TEMP_SENSOR_1     0
+#endif
+#if BV(JULIA_2018_GLCD)
+	#define TEMP_SENSOR_BED   0
+#else
+	#define TEMP_SENSOR_BED   3
 #endif
 
 /**  Thermal  **/
@@ -118,14 +123,15 @@
 #define TEMP_BED_RESIDENCY_TIME 2
 
 /**  PID temperature settings  **/
-#define  DEFAULT_Kp 42.96
-#define  DEFAULT_Ki 5.14
-#define  DEFAULT_Kd 89.73
+#define  DEFAULT_Kp   42.96
+#define  DEFAULT_Ki   5.14
+#define  DEFAULT_Kd   89.73
 
 /**  Thermal Runaway  **/
 #if NBV(JULIA_2018_GLCD)
 	#define THERMAL_PROTECTION_BED
 #endif
+
 
 /**  Bed leveling  **/
 #define MESH_BED_LEVELING
