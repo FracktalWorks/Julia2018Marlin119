@@ -54,8 +54,8 @@
   #define Y_BED_SIZE  250
   #define Z_MAX_POS   300
 #elif BV_PRO()
-  #define X_BED_SIZE  420
-  #define Y_BED_SIZE  410
+  #define X_BED_SIZE  400
+  #define Y_BED_SIZE  395
   #define Z_MAX_POS   405
 #endif
 
@@ -103,6 +103,18 @@
 #define Z_HOME_DIR          1
 #define HOMING_FEEDRATE_Z   (20*60)
 
+/** Min Pos **/
+#if BV(JULIA_2018_PRO_SINGLE)
+  // PEI (Left, Front) at (-20, -10): (5, 16)
+  #define X_MIN_POS -25
+  #define Y_MIN_POS -40
+#elif BV(JULIA_2018_PRO_DUAL)
+  #define X_MIN_POS -40
+  #define Y_MIN_POS -10  
+#else
+  #define X_MIN_POS 0
+  #define Y_MIN_POS 0
+#endif
 
 /**  Thermistor  **/
 #define TEMP_SENSOR_0       3
