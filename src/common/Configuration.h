@@ -136,7 +136,7 @@
 
 // This defines the number of extruders
 // :[1, 2, 3, 4, 5]
-#define EXTRUDERS 1
+// #define EXTRUDERS 1
 
 // Generally expected filament diameter (1.75, 2.85, 3.0, ...). Used for Volumetric, Filament Width Sensor, etc.
 // #define DEFAULT_NOMINAL_FILAMENT_DIA 3.0
@@ -571,7 +571,7 @@
 // #define DEFAULT_XJERK                 10.0
 // #define DEFAULT_YJERK                 10.0
 // #define DEFAULT_ZJERK                  0.3
-#define DEFAULT_EJERK                  5.0
+// #define DEFAULT_EJERK                  5.0
 
 //===========================================================================
 //============================= Z Probe Options =============================

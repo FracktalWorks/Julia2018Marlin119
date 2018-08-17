@@ -42,7 +42,7 @@ typedef struct {
   int16_t target_temperature[HOTENDS],
           fanSpeeds[FAN_COUNT];
 
-  #if HAS_HEATED_BED
+  #if HAS_HEATER_BED
     int16_t target_temperature_bed;
   #endif
 

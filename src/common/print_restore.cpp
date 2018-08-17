@@ -69,7 +69,7 @@ extern char command_queue[BUFSIZE][MAX_CMD_SIZE];
           SERIAL_PROTOCOLPAIR("leveling: ", int(print_restore_info.leveling));
           SERIAL_PROTOCOLLNPAIR(" fade: ", int(print_restore_info.fade));
         #endif
-        #if HAS_HEATED_BED
+        #if HAS_HEATER_BED
           SERIAL_PROTOCOLLNPAIR("target_temperature_bed: ", print_restore_info.target_temperature_bed);
         #endif
         SERIAL_PROTOCOLLNPAIR("cmd_queue_index_r: ", print_restore_info.cmd_queue_index_r);
@@ -120,7 +120,7 @@ void do_print_restore() {
 				
 				card.openFile(CardReader::PrintRestoreGcodeFilename, false);
 				
-				#if HAS_HEATED_BED
+				#if HAS_HEATER_BED
 					// Restore the bed temperature
 					sprintf_P(cmd, PSTR("M190 S%i"), print_restore_info.target_temperature_bed);
 					card.write_command(cmd);
@@ -258,7 +258,7 @@ void save_print_restore_info() {
 	COPY(print_restore_info.current_position, current_position);
 	print_restore_info.feedrate = feedrate_mm_s;
 	COPY(print_restore_info.target_temperature, thermalManager.target_temperature);
-	#if HAS_HEATED_BED
+	#if HAS_HEATER_BED
 		print_restore_info.target_temperature_bed = thermalManager.target_temperature_bed;
 	#endif
 	COPY(print_restore_info.fanSpeeds, fanSpeeds);

@@ -38,11 +38,16 @@
 
 
 /**  Control board  **/
-#define MOTHERBOARD   BOARD_RAMPS_13_EFB
+#define MOTHERBOARD   BOARD_MKS_13 //BOARD_RAMPS_13_EFB
 #define BAUDRATE      115200
 
 /**  Filament  **/
 #define DEFAULT_NOMINAL_FILAMENT_DIA  1.75
+
+
+/**  Kinematics  **/
+#define COREXY
+
 
 /**  Bed dimensions  **/
 #if BV_REG()
@@ -59,50 +64,6 @@
   #define Z_MAX_POS   405
 #endif
 
-/**  Kinematics  **/
-#define COREXY
-
-/**  Movement  **/
-#define DEFAULT_AXIS_STEPS_PER_UNIT   { 160,  160, 1007.874, 280 }
-#define DEFAULT_MAX_FEEDRATE          { 200, 200, 20, 45 }
-#define DEFAULT_MAX_ACCELERATION      { 1000, 1000, 50, 10000 }
-#define DEFAULT_ACCELERATION          1000    // X, Y, Z and E acceleration for printing moves
-#define DEFAULT_RETRACT_ACCELERATION  2000    // E acceleration for retracts
-#define DEFAULT_TRAVEL_ACCELERATION   1000    // X, Y, Z acceleration for travel (non printing) moves
-#define DEFAULT_XJERK                 5.0
-#define DEFAULT_YJERK                 5.0
-#define DEFAULT_ZJERK                 0.4
-
-/**  Enstops  **/
-#define USE_XMIN_PLUG
-#define USE_YMAX_PLUG
-#define USE_ZMAX_PLUG
-
-/**  Stepper  **/
-#if BV_PRO()
-  #define INVERT_X_DIR    true
-  #define INVERT_Y_DIR    true
-  #define INVERT_Z_DIR    true
-#else
-  #define INVERT_X_DIR    false
-  #define INVERT_Y_DIR    false
-  #define INVERT_Z_DIR    false
-#endif
-// #define INVERT_E0_DIR   true
-// #define INVERT_E1_DIR   true
-#if BV_PRO()
-  #define INVERT_E0_DIR   false
-  #define INVERT_E1_DIR   true
-#else
-  #define INVERT_E0_DIR   true
-#endif
-
-/**  Homing  **/
-#define X_HOME_DIR          -1
-#define Y_HOME_DIR          1
-#define Z_HOME_DIR          1
-#define HOMING_FEEDRATE_Z   (20*60)
-
 /** Min Pos **/
 #if BV(JULIA_2018_PRO_SINGLE)
   // PEI (Left, Front) at (-20, -10): (5, 16)
@@ -116,10 +77,55 @@
   #define Y_MIN_POS 0
 #endif
 
+/**  Stepper  **/
+#if BV_PRO()
+  #define INVERT_X_DIR    true
+  #define INVERT_Y_DIR    true
+  #define INVERT_Z_DIR    true
+
+	#define INVERT_E0_DIR   false
+  #define INVERT_E1_DIR   true
+#else
+  #define INVERT_X_DIR    false
+  #define INVERT_Y_DIR    false
+  #define INVERT_Z_DIR    false
+
+	#define INVERT_E0_DIR   true
+#endif
+
+/**  Enstops  **/
+#define USE_XMIN_PLUG
+#define USE_YMAX_PLUG
+#define USE_ZMAX_PLUG
+
+/**  Homing  **/
+#define X_HOME_DIR          -1
+#define Y_HOME_DIR          1
+#define Z_HOME_DIR          1
+#define HOMING_FEEDRATE_Z   (20*60)
+
+/**  Movement  **/
+#define DEFAULT_AXIS_STEPS_PER_UNIT   { 160,  160, 1007.874, 280 }
+#define DEFAULT_MAX_FEEDRATE          { 200, 200, 20, 45 }
+#define DEFAULT_MAX_ACCELERATION      { 1000, 1000, 50, 10000 }
+#define DEFAULT_ACCELERATION          1000    // X, Y, Z and E acceleration for printing moves
+#define DEFAULT_RETRACT_ACCELERATION  2000    // E acceleration for retracts
+#define DEFAULT_TRAVEL_ACCELERATION   1000    // X, Y, Z acceleration for travel (non printing) moves
+#define DEFAULT_XJERK                 10.0
+#define DEFAULT_YJERK                 10.0
+#define DEFAULT_ZJERK                 0.4
+#define DEFAULT_EJERK                 10.0
+
+#if BV(JULIA_2018_PRO_DUAL)
+	#define EXTRUDERS 2
+#else
+	#define EXTRUDERS 1
+#endif
+
 /**  Thermistor  **/
 #define TEMP_SENSOR_0       3
 #if BV(JULIA_2018_PRO_DUAL)
-  #define TEMP_SENSOR_1     1
+  #define TEMP_SENSOR_1     3
 #else
   #define TEMP_SENSOR_1     0
 #endif
