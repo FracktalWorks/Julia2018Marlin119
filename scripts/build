@@ -10,12 +10,12 @@ then
 	echo "Fracktal Works Marlin Build Generator"
 	echo " "
 	echo " Parameters:"
-	echo " 0: JULIA_2018_GLCD"
-	echo " 1: JULIA_2018_GLCD_HB"
-	echo " 2: JULIA_2018_RPI"
-	echo " 3: JULIA_2018_RPI_E"
-	echo " 4: JULIA_2018_PRO_SINGLE"
-	echo " 5: JULIA_2018_PRO_DUAL"
+	echo " 0: JULIA 2018 Basic (GLCD)"
+	echo " 1: JULIA 2018 Intermediate (GLCD_HB)"
+	echo " 2: JULIA 2018 Advanced (RPI)"
+	echo " 3: JULIA 2018 Extended (RPI_E)"
+	echo " 4: JULIA 2018 PRO SINGLE"
+	echo " 5: JULIA 2018 PRO DUAL"
 	echo " "
 fi
 

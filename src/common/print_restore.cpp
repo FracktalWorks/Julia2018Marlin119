@@ -46,45 +46,76 @@ PrintRestorePhase print_restore_phase = IDLE;
 extern uint8_t commands_in_queue, cmd_queue_index_r;
 extern char command_queue[BUFSIZE][MAX_CMD_SIZE];
 
+#if ENABLED(BABYSTEPPING)
+	extern float babystep_total;
+#endif
+
 // Private
 // static char sd_filename[MAXPATHNAMELENGTH];
-
+#define DEBUG_PRINT_RESTORE
 #if ENABLED(DEBUG_PRINT_RESTORE)
-  void debug_print_job_recovery(const bool recovery) {
+  void debug_print_job_recovery() {
+		SERIAL_PROTOCOLLNPGM("");
+		SERIAL_PROTOCOLLNPGM("Print Restore Debug Start");
     SERIAL_PROTOCOLPAIR("valid_head:", (int)print_restore_info.valid_head);
     SERIAL_PROTOCOLLNPAIR(" valid_foot:", (int)print_restore_info.valid_foot);
+
     if (print_restore_info.valid_head) {
       if (print_restore_info.valid_head == print_restore_info.valid_foot) {
+
         SERIAL_PROTOCOLPGM("current_position");
         LOOP_XYZE(i) SERIAL_PROTOCOLPAIR(": ", print_restore_info.current_position[i]);
         SERIAL_EOL();
-        SERIAL_PROTOCOLLNPAIR("feedrate: ", print_restore_info.feedrate);
+
+        SERIAL_PROTOCOLLNPAIR("feedrate %: ", print_restore_info.feedrate_percentage);
+
         SERIAL_PROTOCOLPGM("target_temperature");
         HOTEND_LOOP() SERIAL_PROTOCOLPAIR(": ", print_restore_info.target_temperature[e]);
         SERIAL_EOL();
+
         SERIAL_PROTOCOLPGM("fanSpeeds");
         for(uint8_t i = 0; i < FAN_COUNT; i++) SERIAL_PROTOCOLPAIR(": ", print_restore_info.fanSpeeds[i]);
         SERIAL_EOL();
+
+				#if HAS_HEATER_BED
+          SERIAL_PROTOCOLLNPAIR("target_temperature_bed: ", print_restore_info.target_temperature_bed);
+        #endif
+
         #if HAS_LEVELING
           SERIAL_PROTOCOLPAIR("leveling: ", int(print_restore_info.leveling));
           SERIAL_PROTOCOLLNPAIR(" fade: ", int(print_restore_info.fade));
         #endif
-        #if HAS_HEATER_BED
-          SERIAL_PROTOCOLLNPAIR("target_temperature_bed: ", print_restore_info.target_temperature_bed);
-        #endif
+
+				#if ENABLED(BABYSTEPPING)
+					SERIAL_PROTOCOLLNPAIR("babystepping: ", print_restore_info.babystep);
+				#endif
+				
         SERIAL_PROTOCOLLNPAIR("cmd_queue_index_r: ", print_restore_info.cmd_queue_index_r);
         SERIAL_PROTOCOLLNPAIR("commands_in_queue: ", print_restore_info.commands_in_queue);
-        if (recovery)
-          for (uint8_t i = 0; i < job_recovery_commands_count; i++) SERIAL_PROTOCOLLNPAIR("> ", job_recovery_commands[i]);
-        else
-          for (uint8_t i = 0; i < print_restore_info.commands_in_queue; i++) SERIAL_PROTOCOLLNPAIR("> ", print_restore_info.command_queue[i]);
-        SERIAL_PROTOCOLLNPAIR("sd_filename: ", print_restore_info.sd_filename);
+
+        // if (recovery)
+        //   for (uint8_t i = 0; i < job_recovery_commands_count; i++) SERIAL_PROTOCOLLNPAIR("> ", job_recovery_commands[i]);
+        // else
+        //   for (uint8_t i = 0; i < print_restore_info.commands_in_queue; i++) SERIAL_PROTOCOLLNPAIR("> ", print_restore_info.command_queue[i]);
+        
+				uint8_t r = print_restore_info.cmd_queue_index_r;
+				while (print_restore_info.commands_in_queue) {
+					SERIAL_PROTOCOLLNPAIR("> ", print_restore_info.command_queue[r]);
+
+					print_restore_info.commands_in_queue--;
+					r = (r + 1) % BUFSIZE;
+				}
+
+				SERIAL_PROTOCOLLNPAIR("sd_filename: ", print_restore_info.sd_filename);
         SERIAL_PROTOCOLLNPAIR("sdpos: ", print_restore_info.sdpos);
         SERIAL_PROTOCOLLNPAIR("print_job_elapsed: ", print_restore_info.print_job_elapsed);
-      }
-      else
+
+      } else {
         SERIAL_PROTOCOLLNPGM("INVALID DATA");
+			}
     }
+		SERIAL_PROTOCOLLNPGM("Print Restore Debug End");
+		SERIAL_PROTOCOLLNPGM("");
   }
 #endif // DEBUG_PRINT_RESTORE
 
@@ -104,7 +135,7 @@ void do_print_restore() {
   if (card.cardOK) {
 
     #if ENABLED(DEBUG_PRINT_RESTORE)
-      SERIAL_PROTOCOLLNPAIR("Init job recovery info. Size: ", (int)sizeof(print_restore_info));
+      SERIAL_PROTOCOLLNPAIR("Init job recovery info. Size: ", (int) sizeof(print_restore_info));
     #endif
 
     if (card.printRestoreBinExists()) {
@@ -114,6 +145,11 @@ void do_print_restore() {
       card.loadPrintRestoreInfo();
       card.closePrintRestoreBin();
       // card.removePrintRestoreBin();
+
+			#if ENABLED(DEBUG_PRINT_RESTORE)
+				SERIAL_PROTOCOLLNPGM("Loaded print_restore_info");
+				debug_print_job_recovery();
+			#endif
 
 			if (print_restore_info.valid_head && print_restore_info.valid_head == print_restore_info.valid_foot) {
 				char cmd[40], temp[16];
@@ -189,6 +225,18 @@ void do_print_restore() {
 				// restore Z axis
 				fmtSaveLine(cmd, PSTR("G1 Z%s"), ftostr33s, print_restore_info.current_position[Z_AXIS]);
 				card.write_command(cmd);
+
+				// restore feedrate
+				fmtSaveLine(cmd, PSTR("M220 S%s"), ftostr33s, print_restore_info.feedrate_percentage);
+				card.write_command(cmd);
+
+				// restore babystep
+				#if ENABLED(BABYSTEPPING)
+					if (print_restore_info.babystep != 0) {
+						fmtSaveLine(cmd, PSTR("M290 Z%s"), ftostr33s, print_restore_info.babystep);
+						card.write_command(cmd);
+					}
+				#endif
 				
 				// buffered commands
 				uint8_t r = print_restore_info.cmd_queue_index_r;
@@ -222,7 +270,7 @@ void do_print_restore() {
 				
 				memset(&print_restore_info, 0, sizeof(print_restore_info));
         
-        feedrate_percentage = 100;
+        // feedrate_percentage = 100;
         
 				return;
 				
@@ -256,7 +304,7 @@ void save_print_restore_info() {
 
 	// Machine state
 	COPY(print_restore_info.current_position, current_position);
-	print_restore_info.feedrate = feedrate_mm_s;
+	print_restore_info.feedrate_percentage = feedrate_percentage;
 	COPY(print_restore_info.target_temperature, thermalManager.target_temperature);
 	#if HAS_HEATER_BED
 		print_restore_info.target_temperature_bed = thermalManager.target_temperature_bed;
@@ -274,6 +322,11 @@ void save_print_restore_info() {
 		);
 	#endif
 
+	#if ENABLED(BABYSTEPPING)
+		print_restore_info.babystep = babystep_total;
+		SERIAL_PROTOCOLLNPAIR("Babystep: ", babystep_total);
+	#endif
+
 	// Commands in the queue
 	print_restore_info.cmd_queue_index_r = cmd_queue_index_r;
 	print_restore_info.commands_in_queue = commands_in_queue;
@@ -287,10 +340,10 @@ void save_print_restore_info() {
 	card.getAbsFilename(print_restore_info.sd_filename);
 	print_restore_info.sdpos = card.getIndex();
 
-	#if ENABLED(DEBUG_PRINT_RESTORE)
-		SERIAL_PROTOCOLLNPGM("Saving print_restore_info");
-		debug_print_job_recovery(false);
-	#endif
+	// #if ENABLED(DEBUG_PRINT_RESTORE)
+	// 	SERIAL_PROTOCOLLNPGM("Saving print_restore_info");
+	// 	debug_print_job_recovery(false);
+	// #endif
 
 	card.savePrintRestoreInfo();
 }

@@ -180,6 +180,15 @@ uint16_t max_display_update_time = 0;
   void lcd_bed_menu();
 /* FRACKTAL WORKS: END */
 
+
+/* FRACKTAL WORKS: START */
+// PRINT RESTORE
+#if ENABLED(BABYSTEPPING)
+	extern float babystep_total;
+#endif
+/* FRACKTAL WORKS: END */
+
+
   void lcd_move_menu();
   void lcd_control_menu();
   void lcd_control_temperature_menu();
@@ -1202,9 +1211,16 @@ void kill_screen(const char* lcd_msg) {
         lcdDrawUpdate = LCDVIEW_REDRAW_NOW;
         thermalManager.babystep_axis(axis, babystep_increment);
         babysteps_done += babystep_increment;
+				/* FRACKTAL WORKS: START */
+				// PRINT RESTORE
+				if (axis == Z_AXIS) {
+					babystep_total += ((float) babysteps_done * planner.steps_to_mm[Z_AXIS]);
+				}
+				/* FRACKTAL WORKS: END */
       }
-      if (lcdDrawUpdate)
+      if (lcdDrawUpdate) {
         lcd_implementation_drawedit(msg, ftostr43sign(planner.steps_to_mm[axis] * babysteps_done));
+			}
     }
 
     #if ENABLED(BABYSTEP_XY)

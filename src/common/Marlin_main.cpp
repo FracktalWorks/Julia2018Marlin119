@@ -424,6 +424,11 @@ uint8_t cmd_queue_index_r = 0, // Ring buffer read position
 */
 
 char command_queue[BUFSIZE][MAX_CMD_SIZE];
+
+#if ENABLED(BABYSTEPPING)
+	float babystep_total = 0;
+#endif
+
 /* FRACKTAL WORKS: END */
 
 
@@ -9395,6 +9400,12 @@ inline void gcode_M226() {
       if (parser.seenval('Z') || parser.seenval('S')) {
         const float offs = constrain(parser.value_axis_units(Z_AXIS), -2, 2);
         thermalManager.babystep_axis(Z_AXIS, offs * planner.axis_steps_per_mm[Z_AXIS]);
+
+				/* FRACKTAL WORKS: START */
+				// PRINT RESTORE
+				babystep_total += offs; // (offs * planner.axis_steps_per_mm[Z_AXIS]);
+				/* FRACKTAL WORKS: END */
+
         #if ENABLED(BABYSTEP_ZPROBE_OFFSET)
           if (!parser.seen('P') || parser.value_bool()) mod_zprobe_zoffset(offs);
         #endif

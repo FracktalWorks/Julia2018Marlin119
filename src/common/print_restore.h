@@ -38,7 +38,7 @@ typedef struct {
   uint8_t valid_head;
 
   // Machine state
-  float current_position[NUM_AXIS], feedrate;
+  float current_position[NUM_AXIS], feedrate_percentage;
   int16_t target_temperature[HOTENDS],
           fanSpeeds[FAN_COUNT];
 
@@ -50,6 +50,10 @@ typedef struct {
     bool leveling;
     float fade;
   #endif
+
+	#if ENABLED(BABYSTEPPING)
+		float babystep = 0;
+	#endif
 
   // Command queue
   uint8_t cmd_queue_index_r, commands_in_queue;

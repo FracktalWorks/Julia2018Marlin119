@@ -77,7 +77,7 @@ for (( i=0; i<6; i++ )); do
 	_marlin "${STAGING_SUB}" "${PROJECT_NAME}" "${VARIANT}" "${DATE_STR}" "${DISTDATE}"
 
 	# compile INO
-	specho 2 "Building ${VARIANT}"
+	specho 2 "Building ${MACHINE_NAME} (${VARIANT})"
 	eval "arduino --verify \"${STAGING_SUB_INO}\""
 	RET2=$?
 	if [ $RET2 -ne 0 ]; then
