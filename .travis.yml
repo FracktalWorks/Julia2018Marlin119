@@ -68,8 +68,7 @@ script:
 
 notifications: 
   - slack: 
-    - rooms:
-      - fracktal-works:vq5knl5oZQ21gwsvcSRMK8j2
+    - fracktal-works:vq5knl5oZQ21gwsvcSRMK8j2
     - on_failure: always
     - on_success: always
   - email: 
