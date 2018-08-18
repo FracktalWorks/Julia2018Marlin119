@@ -67,7 +67,9 @@ script:
   - probuild
 
 notifications: 
-  - slack: fracktal-works:vq5knl5oZQ21gwsvcSRMK8j2
+  - slack: 
+    - rooms:
+      - fracktal-works:vq5knl5oZQ21gwsvcSRMK8j2
     - on_failure: always
     - on_success: always
   - email: 
