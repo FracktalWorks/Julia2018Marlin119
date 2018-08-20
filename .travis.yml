@@ -73,5 +73,5 @@ notifications:
     - on_failure: always
     - on_success: always
   - email: 
-    - on_failure: change
-    - on_success: change
+    - on_failure: always
+    - on_success: always
