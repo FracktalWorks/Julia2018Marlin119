@@ -9401,10 +9401,10 @@ inline void gcode_M226() {
         const float offs = constrain(parser.value_axis_units(Z_AXIS), -2, 2);
         thermalManager.babystep_axis(Z_AXIS, offs * planner.axis_steps_per_mm[Z_AXIS]);
 
-				/* FRACKTAL WORKS: START */
-				// PRINT RESTORE
-				babystep_total += offs; // (offs * planner.axis_steps_per_mm[Z_AXIS]);
-				/* FRACKTAL WORKS: END */
+				// /* FRACKTAL WORKS: START */
+				// // PRINT RESTORE
+				// babystep_total += offs; // (offs * planner.axis_steps_per_mm[Z_AXIS]);
+				// /* FRACKTAL WORKS: END */
 
         #if ENABLED(BABYSTEP_ZPROBE_OFFSET)
           if (!parser.seen('P') || parser.value_bool()) mod_zprobe_zoffset(offs);

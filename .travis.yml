@@ -68,7 +68,8 @@ script:
 
 notifications: 
   - slack: 
-    - fracktal-works:vq5knl5oZQ21gwsvcSRMK8j2
+    - rooms:
+      - fracktal-works:vq5knl5oZQ21gwsvcSRMK8j2#travis_ci
     - on_failure: always
     - on_success: always
   - email: 

@@ -87,7 +87,7 @@ extern char command_queue[BUFSIZE][MAX_CMD_SIZE];
         #endif
 
 				#if ENABLED(BABYSTEPPING)
-					SERIAL_PROTOCOLLNPAIR("babystepping: ", print_restore_info.babystep);
+					SERIAL_PROTOCOLLNPAIR_F("babystepping: ", print_restore_info.babystep);
 				#endif
 				
         SERIAL_PROTOCOLLNPAIR("cmd_queue_index_r: ", print_restore_info.cmd_queue_index_r);
@@ -324,7 +324,7 @@ void save_print_restore_info() {
 
 	#if ENABLED(BABYSTEPPING)
 		print_restore_info.babystep = babystep_total;
-		SERIAL_PROTOCOLLNPAIR("Babystep: ", babystep_total);
+		// SERIAL_PROTOCOLLNPAIR("Babystep: ", babystep_total);
 	#endif
 
 	// Commands in the queue

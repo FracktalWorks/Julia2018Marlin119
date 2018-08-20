@@ -63,6 +63,7 @@
 /* FRACKTAL WORKS: START */
 // PRINT RESTORE
 #if ENABLED(PRINT_RESTORE)
+	#include <avr/wdt.h>
   #include "print_restore.h"
 #endif
 /* FRACKTAL WORKS: END */
@@ -183,9 +184,9 @@ uint16_t max_display_update_time = 0;
 
 /* FRACKTAL WORKS: START */
 // PRINT RESTORE
-#if ENABLED(BABYSTEPPING)
-	extern float babystep_total;
-#endif
+// #if ENABLED(PRINT_RESTORE) && ENABLED(BABYSTEPPING)
+// 	extern float babystep_total;
+// #endif
 /* FRACKTAL WORKS: END */
 
 
@@ -904,8 +905,24 @@ void kill_screen(const char* lcd_msg) {
       wait_for_heatup = false;
       */
       
-      LCD_MESSAGEPGM(WELCOME_MSG);
-      lcd_return_to_status();
+			thermalManager.disable_all_heaters();
+			disable_all_steppers();
+
+			LCD_MESSAGEPGM("Restarting printer...");
+			_delay_ms(1000);
+
+			cli(); // Stop interrupts
+			_delay_ms(500); //Wait to ensure all interrupts routines stopped
+
+			thermalManager.disable_all_heaters(); //turn off heaters again
+
+			wdt_enable(WDTO_60MS);
+			while (1) {}	// resetf
+
+			// kill(PSTR("Restart printer to flush old job!"));
+			// LCD_MESSAGEPGM("Restart printer to flush old job!");
+      // LCD_MESSAGEPGM(WELCOME_MSG);
+      // lcd_return_to_status();
     }
     
     static void lcd_job_recovery_menu() {
@@ -1211,12 +1228,12 @@ void kill_screen(const char* lcd_msg) {
         lcdDrawUpdate = LCDVIEW_REDRAW_NOW;
         thermalManager.babystep_axis(axis, babystep_increment);
         babysteps_done += babystep_increment;
-				/* FRACKTAL WORKS: START */
-				// PRINT RESTORE
-				if (axis == Z_AXIS) {
-					babystep_total += ((float) babysteps_done * planner.steps_to_mm[Z_AXIS]);
-				}
-				/* FRACKTAL WORKS: END */
+				// /* FRACKTAL WORKS: START */
+				// // PRINT RESTORE
+				// if (axis == Z_AXIS) {
+				// 	babystep_total += ((float) babysteps_done * planner.steps_to_mm[Z_AXIS]);
+				// }
+				// /* FRACKTAL WORKS: END */
       }
       if (lcdDrawUpdate) {
         lcd_implementation_drawedit(msg, ftostr43sign(planner.steps_to_mm[axis] * babysteps_done));
@@ -1878,13 +1895,13 @@ void kill_screen(const char* lcd_msg) {
 
     static uint8_t manual_probe_index;
 
-/* FRACKTAL WORKS: START */
-// BED LEVELING
+		/* FRACKTAL WORKS: START */
+		// BED LEVELING
     float temp_z_home_offset;
     bool is_advanced_bed_leveling;
     
-    void ABL_DoneMessage();
-/* FRACKTAL WORKS: END */
+    void ABL_Done();
+		/* FRACKTAL WORKS: END */
 
     // LCD probed points are from defaults
     constexpr uint8_t total_probe_points = (
@@ -1931,12 +1948,14 @@ void kill_screen(const char* lcd_msg) {
     void _lcd_level_bed_get_z() {
       ENCODER_DIRECTION_NORMAL();
       
-/* FRACKTAL WORKS: START */
-// BED LEVELING
+			/* FRACKTAL WORKS: START */
+			// BED LEVELING
+			defer_return_to_status = true;
+
       if (is_advanced_bed_leveling && manual_probe_index >= total_probe_points) {
-        lcd_goto_screen(ABL_DoneMessage);
+        lcd_goto_screen(ABL_Done);
       }
-/* FRACKTAL WORKS: END */
+			/* FRACKTAL WORKS: END */
 
       if (lcd_clicked) {
 
@@ -1951,12 +1970,12 @@ void kill_screen(const char* lcd_msg) {
           //
           lcd_wait_for_move = true;
 
-/* FRACKTAL WORKS: START */
-// BED LEVELING
+					/* FRACKTAL WORKS: START */
+					// BED LEVELING
           // lcd_goto_screen(_lcd_level_bed_done);
           if (!is_advanced_bed_leveling)
             lcd_goto_screen(_lcd_level_bed_done);
-/* FRACKTAL WORKS: END */
+					/* FRACKTAL WORKS: END */
 
           #if ENABLED(PROBE_MANUALLY)
             enqueue_and_echo_commands_P(PSTR("G29 V1"));
@@ -2024,6 +2043,11 @@ void kill_screen(const char* lcd_msg) {
      *         Move to the first probe position
      */
     void _lcd_level_bed_homing_done() {
+			/* FRACKTAL WORKS: START */
+			// PRINT RESTORE
+			defer_return_to_status = true;
+			/* FRACKTAL WORKS: END */
+			
       if (lcdDrawUpdate) lcd_implementation_drawedit(PSTR(MSG_LEVEL_BED_WAITING));
       if (lcd_clicked) {
         manual_probe_index = 0;
@@ -3280,22 +3304,32 @@ void kill_screen(const char* lcd_msg) {
   bool QBL_canMove() {
     return lcd_clicked && QBL_movesFinished();
   }
-  
-  void ABL_Done() {
-    is_advanced_bed_leveling = false;
-    lcd_goto_previous_menu();
-    defer_return_to_status = false;
-    home_offset[Z_AXIS] = temp_z_home_offset; //restore z offset back
-    (void)settings.save();
-  }
-  
+    
   void ABL_DoneMessage() {
     u8g.drawStr(0,36,"Advanced Leveling");
     u8g.drawStr(0,48,"Done");
-    
+
     if (QBL_movesFinished()) {
-      lcd_goto_screen(ABL_Done);
+			lcd_return_to_status();
     }
+  }
+
+	void ABL_Done() {
+		lcd_goto_screen(ABL_DoneMessage);
+		lcd_completion_feedback();
+
+    is_advanced_bed_leveling = false;
+    // lcd_goto_previous_menu();
+    defer_return_to_status = false;
+    home_offset[Z_AXIS] = temp_z_home_offset; //restore z offset back
+    (void) settings.save();
+
+		#if HAS_LEVELING
+			// Leveling off before G92 or G28
+			enqueue_and_echo_commands_P(PSTR("M420 S0 Z0"));
+		#endif
+		// Home axes
+		enqueue_and_echo_commands_P(PSTR("G28"));
   }
   
   void ABL_continueMessage() {
@@ -3310,21 +3344,31 @@ void kill_screen(const char* lcd_msg) {
       lcd_goto_screen(_lcd_level_bed_homing_done);
     }
   }
-
-  void QBL_Done() {
-    is_advanced_bed_leveling = false;
-    lcd_goto_previous_menu();
-    lcd_completion_feedback();
-    defer_return_to_status = false;
-    home_offset[Z_AXIS] = temp_z_home_offset; //restore z offset back
-  }
-  
+ 
   void QBL_DoneMessage() {
     u8g.drawStr(0,36,"Quick Leveling Done");
     
-    if (QBL_canMove()) {
-      lcd_goto_screen(QBL_Done);
+    if (QBL_movesFinished()) {
+      lcd_return_to_status();
     }
+  }
+
+	void QBL_Done() {
+		lcd_goto_screen(QBL_DoneMessage);
+		lcd_completion_feedback();
+
+    is_advanced_bed_leveling = false;
+    // lcd_goto_previous_menu();
+    // lcd_completion_feedback();
+    defer_return_to_status = false;
+    home_offset[Z_AXIS] = temp_z_home_offset; //restore z offset back
+
+		#if HAS_LEVELING
+			// Leveling off before G92 or G28
+			enqueue_and_echo_commands_P(PSTR("M420 S0 Z0"));
+		#endif
+		// Home axes
+		enqueue_and_echo_commands_P(PSTR("G28"));
   }
   
   void QBL_ThirdPositionMessage() {
@@ -3336,7 +3380,7 @@ void kill_screen(const char* lcd_msg) {
     if (lcd_clicked) {
       defer_return_to_status = false;
       if (!is_advanced_bed_leveling) {
-        lcd_goto_screen(QBL_DoneMessage);
+        lcd_goto_screen(QBL_Done);
       } else {
         lcd_goto_screen(ABL_continueMessage);
       }
