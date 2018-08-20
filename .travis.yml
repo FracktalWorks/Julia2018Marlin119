@@ -72,6 +72,11 @@ notifications:
       - fracktal-works:vq5knl5oZQ21gwsvcSRMK8j2#travis_ci
     on_failure: always
     on_success: always
+    template:
+      - "*<https://github.com/%{repository_slug}/|%{repository_slug}>* _@<https://github.com/%{repository_slug}/tree/%{branch}|%{branch}>_"
+      - "  Build <%{build_url}|#%{build_number}> (<%{compare_url}|%{commit}>)"
+      - "  By _<https://github.com/%{author}/|%{author}>_ *%{result}* in _%{duration}_"
+      - "  &gt; ${commit_subject}"
   email: 
-    on_failure: always
-    on_success: always
+    on_failure: change
+    on_success: change
