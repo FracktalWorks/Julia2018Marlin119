@@ -67,11 +67,11 @@ script:
   - probuild
 
 notifications: 
-  - slack: 
-    - rooms:
+  slack: 
+    rooms:
       - fracktal-works:vq5knl5oZQ21gwsvcSRMK8j2#travis_ci
-    - on_failure: always
-    - on_success: always
-  - email: 
-    - on_failure: always
-    - on_success: always
+    on_failure: always
+    on_success: always
+  email: 
+    on_failure: always
+    on_success: always
