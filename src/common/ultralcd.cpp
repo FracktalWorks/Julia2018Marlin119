@@ -818,18 +818,18 @@ void kill_screen(const char* lcd_msg) {
     void lcd_sdcard_stop() {
       card.stopSDPrint();
       
-/* FRACKTAL WORKS: START */
-// PRINT RESTORE
-    #if ENABLED(PRINT_RESTORE)
-      /*
-      card.openPrintRestoreBin(false);
-      print_restore_info.valid_head = print_restore_info.valid_foot = 0;
-      card.savePrintRestoreInfo();
-      card.closePrintRestoreBin();
-      */
-      card.removePrintRestoreBin();
-    #endif
-/* FRACKTAL WORKS: END */
+			/* FRACKTAL WORKS: START */
+			// PRINT RESTORE
+			#if ENABLED(PRINT_RESTORE)
+				/*
+				card.openPrintRestoreBin(false);
+				print_restore_info.valid_head = print_restore_info.valid_foot = 0;
+				card.savePrintRestoreInfo();
+				card.closePrintRestoreBin();
+				*/
+				card.removePrintRestoreBin();
+			#endif
+			/* FRACKTAL WORKS: END */
 
       clear_command_queue();
       quickstop_stepper();
@@ -856,7 +856,6 @@ void kill_screen(const char* lcd_msg) {
       if (!card.recoveryFileExists()) {
         // job_recovery_phase = JOB_RECOVERY_IDLE;
         print_restore_phase = IDLE;
-        
         SERIAL_PROTOCOLLNPAIR("Failed ressurect file: ", CardReader::PrintRestoreGcodeFilename);
         //SERIAL_PROTOCOLCHAR('.');
         //SERIAL_EOL();
@@ -871,12 +870,9 @@ void kill_screen(const char* lcd_msg) {
         //card.startFileprint();
         
         char cmd[40];
-        
         sprintf_P(cmd, PSTR("M23 %s"), CardReader::PrintRestoreGcodeFilename);  //opens a file for reading from the SD card
         enqueue_and_echo_command(cmd);
-        
         enqueue_and_echo_commands_P(PSTR("M24"));
-        
         enqueue_and_echo_commands_P(PSTR("M31"));
       }
 
@@ -888,39 +884,29 @@ void kill_screen(const char* lcd_msg) {
     }
     
     static void lcd_sdcard_recover_stop() {
+			// lcd_implementation_clear();
+			// lcd_implementation_drawmenu_static(2, "Restarting printer");
+			// lcd_implementation_drawmenu_static(3, "to flush old job");
+			// SERIAL_ERROR_START();
+  		// SERIAL_ERRORLNPGM("Restarting printer...");
+
       if (card.recoveryFileExists()) {
         card.removeFile(CardReader::PrintRestoreGcodeFilename);
       }
-      
+
       card.removePrintRestoreBin();
-      /*
-      card.stopSDPrint();
-      clear_command_queue();
-      quickstop_stepper();
-      print_job_timer.stop();
-      thermalManager.disable_all_heaters();
-      #if FAN_COUNT > 0
-        for (uint8_t i = 0; i < FAN_COUNT; i++) fanSpeeds[i] = 0;
-      #endif
-      wait_for_heatup = false;
-      */
-      
 			thermalManager.disable_all_heaters();
 			disable_all_steppers();
-
-			LCD_MESSAGEPGM("Restarting printer...");
-			_delay_ms(1000);
+			_delay_ms(600);
 
 			cli(); // Stop interrupts
-			_delay_ms(500); //Wait to ensure all interrupts routines stopped
+			_delay_ms(200); //Wait to ensure all interrupts routines stopped
 
 			thermalManager.disable_all_heaters(); //turn off heaters again
 
-			wdt_enable(WDTO_60MS);
+			wdt_enable(WDTO_15MS);
 			while (1) {}	// resetf
 
-			// kill(PSTR("Restart printer to flush old job!"));
-			// LCD_MESSAGEPGM("Restart printer to flush old job!");
       // LCD_MESSAGEPGM(WELCOME_MSG);
       // lcd_return_to_status();
     }
