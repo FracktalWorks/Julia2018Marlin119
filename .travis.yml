@@ -58,10 +58,10 @@ install:
   - git clone https://github.com/adafruit/Adafruit_NeoPixel.git
   - sudo mv Adafruit_NeoPixel $HOME/arduino_ide/libraries/Adafruit_NeoPixel
 
-before_script: 
-  - "cd ${TRAVIS_BUILD_DIR}"
-  - "sed -i 's/git@github.com:/git:\\/\\/github.com\\//' .gitmodules"
-  - "git submodule update --init --recursive"
+# before_script: 
+#   - "cd ${TRAVIS_BUILD_DIR}"
+#   - "sed -i 's/git@github.com:/git:\\/\\/github.com\\//' .gitmodules"
+#   - "git submodule update --init --recursive"
 
 script: 
   - probuild
