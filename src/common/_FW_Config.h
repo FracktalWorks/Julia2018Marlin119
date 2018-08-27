@@ -182,6 +182,11 @@
 	#define PRINT_RESTORE		  // print restore
 #endif
 
+// Remove Fan 1
+#ifdef FAN1_PIN
+	#undef FAN1_PIN
+#endif
+#define FAN1_PIN -1
 //===========================================================================
 //===================== End of Fracktal Works Julia 2018 ====================
 //===========================================================================
