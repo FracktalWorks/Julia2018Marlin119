@@ -70,8 +70,8 @@
   #define X_MIN_POS -25
   #define Y_MIN_POS -40
 #elif BV(JULIA_2018_PRO_DUAL)
-  #define X_MIN_POS -40
-  #define Y_MIN_POS -10  
+	#define X_MIN_POS -25	// -40
+  #define Y_MIN_POS -40 // -10
 #else
   #define X_MIN_POS 0
   #define Y_MIN_POS 0
@@ -116,10 +116,25 @@
 #define DEFAULT_ZJERK                 0.4
 #define DEFAULT_EJERK                 10.0
 
+/** Extruder Count **/
 #if BV(JULIA_2018_PRO_DUAL)
 	#define EXTRUDERS 2
 #else
 	#define EXTRUDERS 1
+#endif
+
+/*** Dual Nozzle ***/
+#if BV(JULIA_2018_PRO_DUAL)
+	#define SWITCHING_NOZZLE
+  #define SWITCHING_NOZZLE_SERVO_NR 0
+  #define SWITCHING_NOZZLE_SERVO_ANGLES { 0, 180 }   // Angles for E0, E1
+
+	#define NUM_SERVOS 1
+  #define DEACTIVATE_SERVOS_AFTER_MOVE
+
+	#define HOTEND_OFFSET_X {0.0, 36.00}
+  #define HOTEND_OFFSET_Y {0.0, 0}
+	#define HOTEND_OFFSET_Z {0.0, -4.0}
 #endif
 
 /**  Thermistor  **/

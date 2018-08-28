@@ -14,8 +14,8 @@ then
 	echo " 1: JULIA 2018 Intermediate (GLCD_HB)"
 	echo " 2: JULIA 2018 Advanced (RPI)"
 	echo " 3: JULIA 2018 Extended (RPI_E)"
-	echo " 4: JULIA 2018 PRO SINGLE"
-	echo " 5: JULIA 2018 PRO DUAL"
+	echo " 4: JULIA 2018 Pro Single"
+	echo " 5: JULIA 2018 Pro Dual"
 	echo " "
 fi
 
