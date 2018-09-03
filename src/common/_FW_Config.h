@@ -69,12 +69,15 @@
   // PEI (Left, Front) at (-20, -10): (5, 16)
   #define X_MIN_POS -25
   #define Y_MIN_POS -40
+	#define Z_MIN_POS 0
 #elif BV(JULIA_2018_PRO_DUAL)
 	#define X_MIN_POS -25	// -40
   #define Y_MIN_POS -40 // -10
+	#define Z_MIN_POS 0
 #else
   #define X_MIN_POS 0
   #define Y_MIN_POS 0
+	#define Z_MIN_POS 0
 #endif
 
 /**  Stepper  **/
