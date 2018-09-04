@@ -48,9 +48,11 @@
 #define THERMAL_PROTECTION_HYSTERESIS   15     // Degrees Celsius
 #define WATCH_TEMP_PERIOD               80     // Seconds
 
-#define THERMAL_PROTECTION_BED_PERIOD       40 // Seconds
-#define THERMAL_PROTECTION_BED_HYSTERESIS   15 // Degrees Celsius
-#define WATCH_BED_TEMP_PERIOD               80 // Seconds
+#if ENABLED(THERMAL_PROTECTION_BED)
+  #define THERMAL_PROTECTION_BED_PERIOD       40 // Seconds
+  #define THERMAL_PROTECTION_BED_HYSTERESIS   15 // Degrees Celsius
+  #define WATCH_BED_TEMP_PERIOD               80 // Seconds
+#endif
 
 #define LCD_INFO_MENU
 #define STATUS_MESSAGE_SCROLLING
