@@ -104,7 +104,7 @@ fi
 specho 2 "Uploading to Hex repo"
 REPO="Julia2018MarlinHex"
 GH_REPO="github.com/FracktalWorks/${REPO}.git"
-git clone git://${GH_REPO}
+git clone -b 1.1.9 git://${GH_REPO}
 # rm -f "${REPO}"/*.hex
 # _info <dir> <distdate>
 _info "${REPO}" "${DISTDATE}"

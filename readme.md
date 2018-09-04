@@ -1,8 +1,8 @@
 # Julia 2018 Marlin
 
-18 June 2018 - [Marlin](https://github.com/MarlinFirmware/Marlin/tree/9b63430f349f7083d09d2db24d24908e1d277379) 1.1.8
+3 September 2018 - [Marlin](https://github.com/MarlinFirmware/Marlin/tree/7b594ee4a2feba8872d86efff16f414d93dc01c7) 1.1.9
 
-Commit - 9b63430
+Commit - 7b594ee
 
 [Wiki](https://github.com/aharshac/FWJulia2018Marlin/wiki)
 

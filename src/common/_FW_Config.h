@@ -38,7 +38,7 @@
 
 
 /**  Control board  **/
-#define MOTHERBOARD   BOARD_MKS_13 //BOARD_RAMPS_13_EFB
+#define MOTHERBOARD   BOARD_MKS_GEN_13 //BOARD_MKS_13 //BOARD_RAMPS_13_EFB
 #define BAUDRATE      115200
 
 /**  Filament  **/
@@ -108,6 +108,7 @@
 #define HOMING_FEEDRATE_Z   (20*60)
 
 /**  Movement  **/
+#define S_CURVE_ACCELERATION
 #define DEFAULT_AXIS_STEPS_PER_UNIT   { 160,  160, 1007.874, 280 }
 #define DEFAULT_MAX_FEEDRATE          { 200, 200, 20, 45 }
 #define DEFAULT_MAX_ACCELERATION      { 1000, 1000, 50, 10000 }

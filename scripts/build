@@ -7,15 +7,15 @@ declare -a MACHINE_NAMES=("Julia 2018 Basic" "Julia 2018 Intermediate" "Julia 20
 
 if [ -z "${TRAVIS}" ] 
 then
-	echo "Fracktal Works Marlin Build Generator"
+	echo "Fracktal Works Marlin 1.1.9 Build Generator"
 	echo " "
 	echo " Parameters:"
-	echo " 0: JULIA 2018 Basic (GLCD)"
-	echo " 1: JULIA 2018 Intermediate (GLCD_HB)"
-	echo " 2: JULIA 2018 Advanced (RPI)"
-	echo " 3: JULIA 2018 Extended (RPI_E)"
-	echo " 4: JULIA 2018 Pro Single"
-	echo " 5: JULIA 2018 Pro Dual"
+	echo " 0: Julia 2018 Basic (GLCD)"
+	echo " 1: Julia 2018 Intermediate (GLCD_HB)"
+	echo " 2: Julia 2018 Advanced (RPI)"
+	echo " 3: Julia 2018 Extended (RPI_E)"
+	echo " 4: Julia 2018 Pro Single"
+	echo " 5: Julia 2018 Pro Dual"
 	echo " "
 fi
 
