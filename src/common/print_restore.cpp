@@ -306,7 +306,7 @@ void save_print_restore_info() {
 	COPY(print_restore_info.current_position, current_position);
 	print_restore_info.feedrate_percentage = feedrate_percentage;
 	COPY(print_restore_info.target_temperature, thermalManager.target_temperature);
-	#if HAS_HEATER_BED
+	#if HAS_HEATED_BED
 		print_restore_info.target_temperature_bed = thermalManager.target_temperature_bed;
 	#endif
 	COPY(print_restore_info.fanSpeeds, fanSpeeds);

@@ -33,9 +33,6 @@
 #define STRING_SPLASH_LINE1     "1.01"
 #define STRING_SPLASH_LINE2     "www.fracktal.in"
 
-#define SHOW_BOOTSCREEN
-#define SHOW_CUSTOM_BOOTSCREEN
-
 
 /**  Control board  **/
 #define MOTHERBOARD   BOARD_MKS_GEN_13 //BOARD_MKS_13 //BOARD_RAMPS_13_EFB
@@ -190,6 +187,9 @@
 	#define ENCODER_STEPS_PER_MENU_ITEM 2
 	#define SPEAKER
 	#define MKS_MINI_12864
+
+  #define SHOW_BOOTSCREEN
+  #define SHOW_CUSTOM_BOOTSCREEN
 #endif
 
 
