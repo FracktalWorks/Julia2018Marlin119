@@ -115,7 +115,7 @@ git config user.email ${GITHUB_EMAIL}
 git config user.name ${GITHUB_USER}
 git add .
 git commit -m "${TRAVIS_COMMIT}:- ${DISTDATE}" -m "${TRAVIS_COMMIT_MESSAGE}"
-git push "https://${GITHUB_TOKEN}@${GH_REPO}" master # > /dev/null 2>&1
+git push "https://${GITHUB_TOKEN}@${GH_REPO}" 1.1.9 # > /dev/null 2>&1
 
 
 specho 2 "Done!"
