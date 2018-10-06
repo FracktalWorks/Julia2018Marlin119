@@ -55,27 +55,34 @@
   #define X_BED_SIZE  260
   #define Y_BED_SIZE  250
   #define Z_MAX_POS   300
-#elif BV_PRO()
+#elif BV(JULIA_2018_PRO_SINGLE)
   #define X_BED_SIZE  400
+  #define Y_BED_SIZE  395
+  #define Z_MAX_POS   405
+#elif BV(JULIA_2018_PRO_DUAL)
+  #define X_BED_SIZE  370
   #define Y_BED_SIZE  395
   #define Z_MAX_POS   405
 #endif
 
 /** Min Pos **/
-#if BV(JULIA_2018_PRO_SINGLE)
-  // PEI (Left, Front) at (-20, -10): (5, 16)
-  #define X_MIN_POS -25
-  #define Y_MIN_POS -40
-	#define Z_MIN_POS 0
-#elif BV(JULIA_2018_PRO_DUAL)
-	#define X_MIN_POS -25	// -40
-  #define Y_MIN_POS -40 // -10
-	#define Z_MIN_POS 0
-#else
-  #define X_MIN_POS 0
-  #define Y_MIN_POS 0
-	#define Z_MIN_POS 0
-#endif
+// #if BV(JULIA_2018_PRO_SINGLE)
+//   // PEI (Left, Front) at (-20, -10): (5, 16)
+//   #define X_MIN_POS -25	// -40
+//   #define Y_MIN_POS -40 // -10
+//   #define Z_MIN_POS 0
+// #elif BV(JULIA_2018_PRO_DUAL)
+//   #define X_MIN_POS 0 //-40 
+//   #define Y_MIN_POS 0 //-10
+//   #define Z_MIN_POS 0
+// #else
+//   #define X_MIN_POS 0
+//   #define Y_MIN_POS 0
+//   #define Z_MIN_POS 0
+// #endif
+#define X_MIN_POS 0
+#define Y_MIN_POS 0
+#define Z_MIN_POS 0
 
 /**  Stepper  **/
 #if BV_PRO()
@@ -99,17 +106,34 @@
 #define USE_ZMAX_PLUG
 
 /**  Homing  **/
-#define X_HOME_DIR          -1
-#define Y_HOME_DIR          1
-#define Z_HOME_DIR          1
+#define X_HOME_DIR  -1
+#define Y_HOME_DIR   1
+#define Z_HOME_DIR   1
+
+#if BV(JULIA_2018_PRO_SINGLE)
+  #define MANUAL_X_HOME_POS -25
+  #define MANUAL_Y_HOME_POS Y_BED_SIZE + 40
+  #define MANUAL_Z_HOME_POS Z_MAX_POS
+#elif BV(JULIA_2018_PRO_DUAL)
+  #define MANUAL_X_HOME_POS -40 // (-1 * HOTEND_OFFSET_X[1])
+  #define MANUAL_Y_HOME_POS Y_BED_SIZE
+  #define MANUAL_Z_HOME_POS Z_MAX_POS
+#endif
+
+#define HOMING_FEEDRATE_XY  (50*60)
 #define HOMING_FEEDRATE_Z   (20*60)
 
 /**  Movement  **/
 #define S_CURVE_ACCELERATION
 #define DEFAULT_AXIS_STEPS_PER_UNIT   { 160,  160, 1007.874, 280 }
 #define DEFAULT_MAX_FEEDRATE          { 200, 200, 20, 45 }
-#define DEFAULT_MAX_ACCELERATION      { 1000, 1000, 50, 10000 }
-#define DEFAULT_ACCELERATION          1000    // X, Y, Z and E acceleration for printing moves
+#if BV_PRO()
+  #define DEFAULT_ACCELERATION          800    // X, Y, Z and E acceleration for printing moves
+  #define DEFAULT_MAX_ACCELERATION      { 800, 800, 50, 10000 }
+#else
+  #define DEFAULT_ACCELERATION          1000    // X, Y, Z and E acceleration for printing moves
+  #define DEFAULT_MAX_ACCELERATION      { 1000, 1000, 50, 10000 }
+#endif
 #define DEFAULT_RETRACT_ACCELERATION  2000    // E acceleration for retracts
 #define DEFAULT_TRAVEL_ACCELERATION   1000    // X, Y, Z acceleration for travel (non printing) moves
 #define DEFAULT_XJERK                 10.0
@@ -133,8 +157,8 @@
 	#define NUM_SERVOS 1
   #define DEACTIVATE_SERVOS_AFTER_MOVE
 
-	#define HOTEND_OFFSET_X {0.0, 36.00}
-  #define HOTEND_OFFSET_Y {0.0, 0}
+	#define HOTEND_OFFSET_X {0.0, 36.0}
+  #define HOTEND_OFFSET_Y {0.0,  0.0}
 	#define HOTEND_OFFSET_Z {0.0, -4.0}
 #endif
 

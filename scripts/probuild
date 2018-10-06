@@ -44,7 +44,7 @@ mv "${STAGING_SUB}/Marlin.ino" "${STAGING_SUB_INO}"
 # make output dir
 mkdir -p "${OUTPUT}"
 
-for (( i=0; i<6; i++ )); do
+for (( i=4; i<=5; i++ )); do
 	SHORT_VARIANT=${SHORT_VARIANTS[${i}]}
 	MACHINE_NAME=${MACHINE_NAMES[${i}]}
 	VARIANT=${VARIANTS[${i}]}
@@ -104,7 +104,8 @@ fi
 specho 2 "Uploading to Hex repo"
 REPO="Julia2018MarlinHex"
 GH_REPO="github.com/FracktalWorks/${REPO}.git"
-git clone -b 1.1.9 git://${GH_REPO}
+# git clone -b 1.1.9 git://${GH_REPO}
+git clone -b master git://${GH_REPO}
 # rm -f "${REPO}"/*.hex
 # _info <dir> <distdate>
 _info "${REPO}" "${DISTDATE}"
@@ -115,7 +116,7 @@ git config user.email ${GITHUB_EMAIL}
 git config user.name ${GITHUB_USER}
 git add .
 git commit -m "${TRAVIS_COMMIT}:- ${DISTDATE}" -m "${TRAVIS_COMMIT_MESSAGE}"
-git push "https://${GITHUB_TOKEN}@${GH_REPO}" 1.1.9 # > /dev/null 2>&1
+git push "https://${GITHUB_TOKEN}@${GH_REPO}" master # > /dev/null 2>&1
 
 
 specho 2 "Done!"

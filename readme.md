@@ -10,14 +10,14 @@ Commit - 7b594ee
 
 ## Build Variants
 
-| Variant                 | Variant Code          | Short Code |
-|-------------------------|-----------------------|------------|
-| Julia 2018 Basic        | JULIA_2018_GLCD       | J18GX      |
-| Julia 2018 Intermediate | JULIA_2018_GLCD_HB    | J18GB      |
-| Julia 2018 Advanced     | JULIA_2018_RPI        | J18RX      |
-| Julia 2018 Extended     | JULIA_2018_RPI_E      | J18RE      |
-| Julia 2018 Pro Single   | JULIA_2018_PRO_SINGLE | J18PS      |
-| Julia 2018 Pro Dual     | JULIA_2018_PRO_DUAL   | J18PD      |
+| Variant                 | Variant Code          | Short Code | Build Code |
+|-------------------------|-----------------------|------------|-----------:|
+| Julia 2018 Basic        | JULIA_2018_GLCD       | J18GX      | 0          |
+| Julia 2018 Intermediate | JULIA_2018_GLCD_HB    | J18GB      | 1          |
+| Julia 2018 Advanced     | JULIA_2018_RPI        | J18RX      | 2          |
+| Julia 2018 Extended     | JULIA_2018_RPI_E      | J18RE      | 3          |
+| Julia 2018 Pro Single   | JULIA_2018_PRO_SINGLE | J18PS      | 4          |
+| Julia 2018 Pro Dual     | JULIA_2018_PRO_DUAL   | J18PD      | 5          |
 
 ## Migration Process
 

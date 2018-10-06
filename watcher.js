@@ -80,8 +80,8 @@ function onFileEvent(filePath) {
 			// fs.copySync( filePath, dir_staging, { "overwrite": true } );
 			copyData( filePath, path.join(dir_staging, path.basename( filePath )) );
 		} else {
-			// const path_hex_dest = path.join( dir_output, staging_name + "_mega_" + moment().format("DDMMYYYY_HHmmss") + ".hex");
-			fs.copySync( filePath, dir_output, { "overwrite": true } );
+			const path_hex_dest = path.join( dir_output, staging_name + "_mega_" + moment().format("DDMMYYYY_HHmmss") + ".hex");
+			fs.copySync( filePath, path_hex_dest, { "overwrite": true } );
 		}
 	} catch(ex) {
 		e(ex);

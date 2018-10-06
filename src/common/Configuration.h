@@ -181,8 +181,8 @@
 // A dual-nozzle that uses a servomotor to raise/lower one of the nozzles
 //#define SWITCHING_NOZZLE
 #if ENABLED(SWITCHING_NOZZLE)
-  #define SWITCHING_NOZZLE_SERVO_NR 0
-  #define SWITCHING_NOZZLE_SERVO_ANGLES { 0, 90 }   // Angles for E0, E1
+  //#define SWITCHING_NOZZLE_SERVO_NR 0
+  //#define SWITCHING_NOZZLE_SERVO_ANGLES { 0, 90 }   // Angles for E0, E1
   //#define HOTEND_OFFSET_Z { 0.0, 0.0 }
 #endif
 
@@ -1144,7 +1144,7 @@
 #endif
 
 // Homing speeds (mm/m)
-#define HOMING_FEEDRATE_XY (50*60)
+//#define HOMING_FEEDRATE_XY (50*60)
 // #define HOMING_FEEDRATE_Z  (4*60)
 
 // @section calibrate
