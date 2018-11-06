@@ -44,7 +44,7 @@ mv "${STAGING_SUB}/Marlin.ino" "${STAGING_SUB_INO}"
 # make output dir
 mkdir -p "${OUTPUT}"
 
-for (( i=4; i<=5; i++ )); do
+for (( i=0; i<=5; i++ )); do
 	SHORT_VARIANT=${SHORT_VARIANTS[${i}]}
 	MACHINE_NAME=${MACHINE_NAMES[${i}]}
 	VARIANT=${VARIANTS[${i}]}

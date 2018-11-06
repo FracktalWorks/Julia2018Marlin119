@@ -16,21 +16,21 @@
 
 /** Machine name for variant **/
 #if BV(JULIA_2018_GLCD)
-	#define CUSTOM_MACHINE_NAME "Julia 2018 Basic"
+	#define CUSTOM_MACHINE_NAME "Julia Basic"
 #elif BV(JULIA_2018_GLCD_HB)
-	#define CUSTOM_MACHINE_NAME "Julia 2018 Intermediate"
+	#define CUSTOM_MACHINE_NAME "Julia Intermediate"
 #elif BV(JULIA_2018_RPI)
-	#define CUSTOM_MACHINE_NAME "Julia 2018 Advanced"
+	#define CUSTOM_MACHINE_NAME "Julia Advanced"
 #elif BV(JULIA_2018_RPI_E)
-	#define CUSTOM_MACHINE_NAME "Julia 2018 Extended"
+	#define CUSTOM_MACHINE_NAME "Julia Extended"
 #elif BV(JULIA_2018_PRO_SINGLE)
-  #define CUSTOM_MACHINE_NAME "Julia 2018 Pro Single"
+  #define CUSTOM_MACHINE_NAME "Julia Pro Single"
 #elif BV(JULIA_2018_PRO_DUAL)
-  #define CUSTOM_MACHINE_NAME "Julia 2018 Pro Dual"
+  #define CUSTOM_MACHINE_NAME "Julia Pro Dual"
 #endif
 
 #define STRING_CONFIG_H_AUTHOR  "Fracktal Works"
-#define STRING_SPLASH_LINE1     "1.01"
+#define STRING_SPLASH_LINE1     "1.1.9"
 #define STRING_SPLASH_LINE2     "www.fracktal.in"
 
 
@@ -54,7 +54,7 @@
 #elif BV(JULIA_2018_RPI_E)
   #define X_BED_SIZE  260
   #define Y_BED_SIZE  250
-  #define Z_MAX_POS   300
+  #define Z_MAX_POS   305
 #elif BV(JULIA_2018_PRO_SINGLE)
   #define X_BED_SIZE  400
   #define Y_BED_SIZE  395
