@@ -12,7 +12,7 @@
 #endif
 
 /**  Machine Branding  **/
-#define USE_AUTOMATIC_VERSIONING
+// #define USE_AUTOMATIC_VERSIONING
 
 /** Machine name for variant **/
 #if BV(JULIA_2018_GLCD)
@@ -30,8 +30,8 @@
 #endif
 
 #define STRING_CONFIG_H_AUTHOR  "Fracktal Works"
-#define STRING_SPLASH_LINE1     "1.1.9"
-#define STRING_SPLASH_LINE2     "www.fracktal.in"
+#define STRING_SPLASH_LINE1     MSG_MARLIN " " MARLIN_BRANCH
+#define STRING_SPLASH_LINE2     WEBSITE_URL
 
 
 /**  Control board  **/
@@ -48,11 +48,11 @@
 
 /**  Bed dimensions  **/
 #if BV_REG()
-  #define X_BED_SIZE  210
+  #define X_BED_SIZE  200
   #define Y_BED_SIZE  200
   #define Z_MAX_POS   210
 #elif BV(JULIA_2018_RPI_E)
-  #define X_BED_SIZE  260
+  #define X_BED_SIZE  250
   #define Y_BED_SIZE  250
   #define Z_MAX_POS   305
 #elif BV(JULIA_2018_PRO_SINGLE)
@@ -110,7 +110,11 @@
 #define Y_HOME_DIR   1
 #define Z_HOME_DIR   1
 
-#if BV(JULIA_2018_PRO_SINGLE)
+#if BV_REG() || BV(JULIA_2018_RPI_E)
+  #define MANUAL_X_HOME_POS -10
+  #define MANUAL_Y_HOME_POS Y_BED_SIZE
+  #define MANUAL_Z_HOME_POS Z_MAX_POS
+#elif BV(JULIA_2018_PRO_SINGLE)
   #define MANUAL_X_HOME_POS -25
   #define MANUAL_Y_HOME_POS Y_BED_SIZE + 40
   #define MANUAL_Z_HOME_POS Z_MAX_POS
@@ -222,7 +226,8 @@
 #define NOZZLE_PARK_FEATURE
 #define PRINTCOUNTER
 #if BV_NPI()
-	#define PRINT_RESTORE		  // print restore
+  #define PRINT_RESTORE  // print restore
+  #define FW_BABYSTEP
 #endif
 
 // Remove Fan 1

@@ -51,9 +51,9 @@ typedef struct {
     float fade;
   #endif
 
-	#if ENABLED(BABYSTEPPING)
-		float babystep = 0;
-	#endif
+	// #if ENABLED(BABYSTEPPING)
+	// 	float babystep = 0;
+	// #endif
 
   // Command queue
   uint8_t cmd_queue_index_r, commands_in_queue;

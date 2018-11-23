@@ -439,9 +439,9 @@ uint8_t commands_in_queue = 0, // Count of commands in the queue
 */
 char command_queue[BUFSIZE][MAX_CMD_SIZE];
 
-#if ENABLED(BABYSTEPPING)
-	float babystep_total = 0;
-#endif
+// #if ENABLED(BABYSTEPPING)
+//   float babystep_total = 0;
+// #endif
 
 /* FRACKTAL WORKS: END */
 
@@ -7295,9 +7295,18 @@ inline void gcode_M17() {
    * M23: Open a file
    */
   inline void gcode_M23() {
-    #if ENABLED(POWER_LOSS_RECOVERY)
-      card.removeJobRecoveryFile();
-    #endif
+    /* FRACKTAL WORKS: START */
+    // PRINT RESTORE
+    // #if ENABLED(POWER_LOSS_RECOVERY)
+    //   card.removeJobRecoveryFile();
+    // #endif
+
+    // Don't enable: BIN cannot be written after recovery
+    // #if ENABLED(PRINT_RESTORE)
+    //   card.removePrintRestoreBin();
+    // #endif
+
+    /* FRACKTAL WORKS: END */
     // Simplify3D includes the size, so zero out all spaces (#7227)
     for (char *fn = parser.string_arg; *fn; ++fn) if (*fn == ' ') *fn = '\0';
     card.openFile(parser.string_arg, true);
@@ -9854,15 +9863,25 @@ inline void gcode_M226() {
         }
     #else
       if (parser.seenval('Z') || parser.seenval('S')) {
+        /* FRACKTAL WORKS: START */
+        // FW_BABYSTEP
         const float offs = constrain(parser.value_axis_units(Z_AXIS), -2, 2);
-        thermalManager.babystep_axis(Z_AXIS, offs * planner.axis_steps_per_mm[Z_AXIS]);
-        // /* FRACKTAL WORKS: START */
-        // // PRINT RESTORE
-        // babystep_total += offs; // (offs * planner.axis_steps_per_mm[Z_AXIS]);
-        // /* FRACKTAL WORKS: END */
+        #if BV_PI() && HAS_LEVELING
+          if (planner.leveling_active) {
+            if (mbl.z_offset + offs > FW_BABYSTEP_LIMIT)
+              mbl.z_offset = FW_BABYSTEP_LIMIT;
+            else if (mbl.z_offset + offs < -1 * FW_BABYSTEP_LIMIT)
+              mbl.z_offset = -1 * FW_BABYSTEP_LIMIT;
+            else
+              mbl.z_offset += offs;
+            (void)settings.save();
+          } else
+        #endif
+              thermalManager.babystep_axis(Z_AXIS, offs * planner.axis_steps_per_mm[Z_AXIS]);
         #if ENABLED(BABYSTEP_ZPROBE_OFFSET)
           if (!parser.seen('P') || parser.value_bool()) mod_zprobe_zoffset(offs);
         #endif
+        /* FRACKTAL WORKS: END */
       }
     #endif
   }
@@ -10449,11 +10468,20 @@ void quickstop_stepper() {
       /* FRACKTAL WORKS: START */
       // BED LEVELING
       // show error as echo to prevent catch by Octoprint
+
       // SERIAL_ERROR_START();
       // SERIAL_ERRORLNPGM(MSG_ERR_M420_FAILED);
       SERIAL_ECHOLNPGM(MSG_ERR_M420_FAILED);
       /* FRACKTAL WORKS: END */
     }
+
+    /* FRACKTAL WORKS: START */
+    // BABYSTEP SAVE
+    // char cmd[30];
+    // sprintf_P(cmd, PSTR("G29 S4 Z%s"), ftostr43sign(babystep_total));
+    // SERIAL_ECHOLNPAIR("Babystep z-offset", cmd);
+    // enqueue_and_echo_command_now(cmd);
+    /* FRACKTAL WORKS: END */
 
     SERIAL_ECHO_START();
     SERIAL_ECHOLNPAIR("Bed Leveling ", planner.leveling_active ? MSG_ON : MSG_OFF);
@@ -14724,10 +14752,17 @@ void setup() {
   if (mcu & 32) SERIAL_ECHOLNPGM(MSG_SOFTWARE_RESET);
   MCUSR = 0;
 
+/* FRACKTAL WORKS: START */
+// Build versioning
   SERIAL_ECHOPGM(MSG_MARLIN);
   SERIAL_CHAR(' ');
-  SERIAL_ECHOLNPGM(SHORT_BUILD_VERSION);
+  SERIAL_ECHOLNPGM(MARLIN_BRANCH);
+  SERIAL_ECHO_START();
+  SERIAL_ECHOLNPGM(STRING_CONFIG_H_AUTHOR " " MACHINE_NAME);
+  SERIAL_ECHO_START();
+  SERIAL_ECHOLNPGM("Build: " DETAILED_BUILD_VERSION);
   SERIAL_EOL();
+/* FRACKTAL WORKS: END */
 
   #if defined(STRING_DISTRIBUTION_DATE) && defined(STRING_CONFIG_H_AUTHOR)
     SERIAL_ECHO_START();

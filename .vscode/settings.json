@@ -3,4 +3,7 @@
 	"editor.insertSpaces": true,
   "editor.tabSize": 2,
   "cquery.cacheDirectory": "${workspaceFolder}/.vscode/cquery_cached_index/",
+  "files.associations": {
+    "xutility": "cpp"
+  },
 }

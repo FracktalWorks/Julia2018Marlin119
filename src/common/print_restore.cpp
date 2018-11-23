@@ -46,9 +46,9 @@ PrintRestorePhase print_restore_phase = IDLE;
 extern uint8_t commands_in_queue, cmd_queue_index_r;
 extern char command_queue[BUFSIZE][MAX_CMD_SIZE];
 
-#if ENABLED(BABYSTEPPING)
-	extern float babystep_total;
-#endif
+// #if ENABLED(BABYSTEPPING)
+// 	extern float babystep_total;
+// #endif
 
 // Private
 // static char sd_filename[MAXPATHNAMELENGTH];
@@ -86,9 +86,9 @@ extern char command_queue[BUFSIZE][MAX_CMD_SIZE];
           SERIAL_PROTOCOLLNPAIR(" fade: ", int(print_restore_info.fade));
         #endif
 
-				#if ENABLED(BABYSTEPPING)
-					SERIAL_PROTOCOLLNPAIR_F("babystepping: ", print_restore_info.babystep);
-				#endif
+				// #if ENABLED(BABYSTEPPING)
+				// 	SERIAL_PROTOCOLLNPAIR_F("babystepping: ", print_restore_info.babystep);
+				// #endif
 				
         SERIAL_PROTOCOLLNPAIR("cmd_queue_index_r: ", print_restore_info.cmd_queue_index_r);
         SERIAL_PROTOCOLLNPAIR("commands_in_queue: ", print_restore_info.commands_in_queue);
@@ -156,13 +156,27 @@ void do_print_restore() {
 				
 				card.openFile(CardReader::PrintRestoreGcodeFilename, false);
 				
-				#if HAS_HEATER_BED
+        // Restore temperatures
+        #if HAS_HEATER_BED
 					// Restore the bed temperature
-					sprintf_P(cmd, PSTR("M190 S%i"), print_restore_info.target_temperature_bed);
+					sprintf_P(cmd, PSTR("M140 S%i"), print_restore_info.target_temperature_bed);
 					card.write_command(cmd);
 				#endif
 
 				// Restore all hotend temperatures
+				HOTEND_LOOP() {
+					sprintf_P(cmd, PSTR("M104 S%i"), print_restore_info.target_temperature[e]);
+					card.write_command(cmd);
+				}
+
+        // Wait for temperatures
+				#if HAS_HEATER_BED
+					// Wait for bed temperature
+					sprintf_P(cmd, PSTR("M190 S%i"), print_restore_info.target_temperature_bed);
+					card.write_command(cmd);
+				#endif
+
+				// Wait for all hotend temperatures
 				HOTEND_LOOP() {
 					sprintf_P(cmd, PSTR("M109 S%i"), print_restore_info.target_temperature[e]);
 					card.write_command(cmd);
@@ -231,12 +245,12 @@ void do_print_restore() {
 				card.write_command(cmd);
 
 				// restore babystep
-				#if ENABLED(BABYSTEPPING)
-					if (print_restore_info.babystep != 0) {
-						fmtSaveLine(cmd, PSTR("M290 Z%s"), ftostr33s, print_restore_info.babystep);
-						card.write_command(cmd);
-					}
-				#endif
+				// #if ENABLED(BABYSTEPPING)
+				// 	if (print_restore_info.babystep != 0) {
+				// 		fmtSaveLine(cmd, PSTR("M290 Z%s"), ftostr33s, print_restore_info.babystep);
+				// 		card.write_command(cmd);
+				// 	}
+				// #endif
 				
 				// buffered commands
 				uint8_t r = print_restore_info.cmd_queue_index_r;
@@ -322,10 +336,10 @@ void save_print_restore_info() {
 		);
 	#endif
 
-	#if ENABLED(BABYSTEPPING)
-		print_restore_info.babystep = babystep_total;
-		// SERIAL_PROTOCOLLNPAIR("Babystep: ", babystep_total);
-	#endif
+	// #if ENABLED(BABYSTEPPING)
+	// 	print_restore_info.babystep = babystep_total;
+	// 	// SERIAL_PROTOCOLLNPAIR("Babystep: ", babystep_total);
+	// #endif
 
 	// Commands in the queue
 	print_restore_info.cmd_queue_index_r = cmd_queue_index_r;

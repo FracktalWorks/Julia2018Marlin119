@@ -23,9 +23,10 @@
 #define BV(var)   (VARIANT == var)
 #define NBV(var)  (VARIANT != var)
 
-#define BV_NPI()	( BV(JULIA_2018_GLCD) || BV(JULIA_2018_GLCD_HB) )
-#define BV_PIX()	( BV(JULIA_2018_RPI) || BV(JULIA_2018_RPI_E) )
-#define BV_REG()	( BV(JULIA_2018_GLCD) || BV(JULIA_2018_GLCD_HB) || BV(JULIA_2018_RPI) )
-#define BV_PRO()	( BV(JULIA_2018_PRO_SINGLE) || BV(JULIA_2018_PRO_DUAL) )
+#define BV_NPI()  ( BV(JULIA_2018_GLCD) || BV(JULIA_2018_GLCD_HB) )
+#define BV_PIX()  ( BV(JULIA_2018_RPI) || BV(JULIA_2018_RPI_E) )
+#define BV_REG()  ( BV_NPI() || BV(JULIA_2018_RPI) )
+#define BV_PRO()  ( BV(JULIA_2018_PRO_SINGLE) || BV(JULIA_2018_PRO_DUAL) )
+#define BV_PI()   ( BV_PIX() || BV_PRO() )
 
 #endif // _FRACKTAL_WORKS_H
