@@ -54,7 +54,7 @@
 #elif BV(JULIA_2018_RPI_E)
   #define X_BED_SIZE  250
   #define Y_BED_SIZE  250
-  #define Z_MAX_POS   305
+  #define Z_MAX_POS   300
 #elif BV(JULIA_2018_PRO_SINGLE)
   #define X_BED_SIZE  400
   #define Y_BED_SIZE  395
