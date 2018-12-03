@@ -4,8 +4,6 @@
 
 Commit - 7b594ee
 
-[Wiki](https://github.com/aharshac/FWJulia2018Marlin/wiki)
-
 [G-code](http://marlinfw.org/meta/gcode/)
 
 ## Build Variants
@@ -23,7 +21,7 @@ Commit - 7b594ee
 
 1. Clone Marlin to `src/Marlin` .
 2. Copy overriding files to `src/common`.
-3. Modify overriding files by referring to wiki.
+3. Modify overriding files.
 4. Commit source to git.
 
 ## Build Environment Initialization
@@ -42,9 +40,10 @@ Commit - 7b594ee
 ## Directory Structure
 
 - `src/` - Source root
-  - `Marlin/` - [Marlin](https://github.com/MarlinFirmware/Marlin) (git submodule)
+  - `Marlin/` - [Marlin](https://github.com/MarlinFirmware/Marlin)
   - `common/` - Files common to all variants
+- `scripts/` - Build automation rellated scripts
 - `staging/` - Marlin + common + variant files
 - `output/` - Hex files
 - ~~`build.ps1` - Build automation PowerShell script~~ **redundant**
-- `index.js` - Build automation Node.js script
+- `watcher.js` - Build automation Node.js script

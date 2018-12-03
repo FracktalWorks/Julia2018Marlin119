@@ -44,6 +44,8 @@
 	#define ADVANCED_PAUSE_FEATURE
 #endif
 
+#define HOME_Y_BEFORE_X
+
 #define THERMAL_PROTECTION_PERIOD       80     // Seconds
 #define THERMAL_PROTECTION_HYSTERESIS   15     // Degrees Celsius
 #define WATCH_TEMP_PERIOD               80     // Seconds
