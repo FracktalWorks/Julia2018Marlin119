@@ -3543,8 +3543,8 @@ void lcd_quick_feedback(const bool clear_buttons) {
     
     enqueue_and_echo_commands_P(PSTR("G1 F9000"));
     enqueue_and_echo_commands_P(PSTR("G1 Z20"));
-    enqueue_and_echo_commands_P(PSTR("G1 X110 Y197"));
-    enqueue_and_echo_commands_P(PSTR("G1 X110 Y197 Z0"));
+    enqueue_and_echo_commands_P(PSTR("G1 X100 Y197"));
+    enqueue_and_echo_commands_P(PSTR("G1 X100 Y197 Z0"));
   }
 
 
@@ -3565,8 +3565,8 @@ void lcd_quick_feedback(const bool clear_buttons) {
 
     enqueue_and_echo_commands_P(PSTR("G1 F9000"));
     enqueue_and_echo_commands_P(PSTR("G1 Z20"));
-    enqueue_and_echo_commands_P(PSTR("G1 X35.6 Y21"));
-    enqueue_and_echo_commands_P(PSTR("G1 X35.6 Y21 Z0"));
+    enqueue_and_echo_commands_P(PSTR("G1 X25.6 Y21"));
+    enqueue_and_echo_commands_P(PSTR("G1 X25.6 Y21 Z0"));
     
   }
 
@@ -3586,8 +3586,8 @@ void lcd_quick_feedback(const bool clear_buttons) {
     lcd_goto_screen(QBL_FirstPositionMessage);
 
     enqueue_and_echo_commands_P(PSTR("G1 F9000"));
-    enqueue_and_echo_commands_P(PSTR("G1 X181 Y21"));
-    enqueue_and_echo_commands_P(PSTR("G1 X181 Y21 Z0"));
+    enqueue_and_echo_commands_P(PSTR("G1 X171 Y21"));
+    enqueue_and_echo_commands_P(PSTR("G1 X171 Y21 Z0"));
   }
 
   void QBL_UnlockMessage() {
