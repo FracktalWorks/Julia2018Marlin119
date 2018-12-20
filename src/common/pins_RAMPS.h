@@ -82,7 +82,11 @@
 // Z Probe (when not Z_MIN_PIN)
 //
 #ifndef Z_MIN_PROBE_PIN
-  #define Z_MIN_PROBE_PIN  32
+  #if BV_PRO_ABL()
+    #define Z_MIN_PROBE_PIN  57
+  #else
+    #define Z_MIN_PROBE_PIN  32
+  #endif
 #endif
 
 //

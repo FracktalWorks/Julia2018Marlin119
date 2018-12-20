@@ -1,0 +1,45 @@
+#!/usr/bin/env bash
+
+declare -a VARIANTS=(
+  "JULIA_2018_GLCD"
+  "JULIA_2018_GLCD_HB"
+  "JULIA_2018_RPI"
+  "JULIA_2018_RPI_E"
+  "JULIA_2018_PRO_SINGLE"
+  "JULIA_2018_PRO_DUAL"
+  "JULIA_2018_PRO_SINGLE_A"
+  "JULIA_2018_PRO_DUAL_A"
+)
+
+declare -a SHORT_VARIANTS=(
+  "J18GX"
+  "J18GB"
+  "J18RX"
+  "J18RE"
+  "J18PS"
+  "J18PD"
+  "J18PT"
+  "J18PE"
+)
+
+declare -a MACHINE_NAMES=(
+  "Julia Basic"
+  "Julia Intermediate"
+  "Julia Advanced"
+  "Julia Extended"
+  "Julia Pro Single"
+  "Julia Pro Dual"
+  "Julia Pro Single ABL"
+  "Julia Pro Dual ABL"
+)
+
+declare -a UUIDS=(
+  "09e48e63-894a-41ec-86c3-20fcb9b34030"
+  "2e302c16-a3ac-4a6f-babc-748e2c5f8dab"
+  "b68ca0d9-60d2-445c-b234-e90f8ad69a08"
+  "8bea1474-710b-4b90-8a50-8237eaaec50f"
+  "9e69be0b-d76c-424f-9c28-0fbd1bfaf75a"
+  "56a1cc8d-2bc1-4592-b8f5-6c1c2aecaf0c"
+  "2f9e7e22-589b-4ec9-bff5-12f7f6d3998c"
+  "a52db5c4-7553-468b-ba80-273f8da9eb75"
+)

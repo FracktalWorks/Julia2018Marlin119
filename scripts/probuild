@@ -2,10 +2,7 @@
 
 PROJECT_NAME="Julia2018Marlin119"
 
-declare -a VARIANTS=("JULIA_2018_GLCD" "JULIA_2018_GLCD_HB" "JULIA_2018_RPI" "JULIA_2018_RPI_E" "JULIA_2018_PRO_SINGLE" "JULIA_2018_PRO_DUAL")
-declare -a SHORT_VARIANTS=("J18GX" "J18GB" "J18RX" "J18RE" "J18PS" "J18PD")
-declare -a MACHINE_NAMES=("Julia 2018 Basic" "Julia 2018 Intermediate" "Julia 2018 Advanced" "Julia 2018 Extended" "Julia 2018 Pro Single" "Julia 2018 Pro Dual")
-declare -a UUIDS=("09e48e63-894a-41ec-86c3-20fcb9b34030" "2e302c16-a3ac-4a6f-babc-748e2c5f8dab" "b68ca0d9-60d2-445c-b234-e90f8ad69a08" "8bea1474-710b-4b90-8a50-8237eaaec50f" "9e69be0b-d76c-424f-9c28-0fbd1bfaf75a" "56a1cc8d-2bc1-4592-b8f5-6c1c2aecaf0c")
+. constants
 
 # static paths
 SRC="${TRAVIS_BUILD_DIR}/src"
@@ -45,7 +42,7 @@ mv "${STAGING_SUB}/Marlin.ino" "${STAGING_SUB_INO}"
 # make output dir
 mkdir -p "${OUTPUT}"
 
-for (( i=0; i<=5; i++ )); do
+for (( i=0; i<=7; i++ )); do
 	SHORT_VARIANT=${SHORT_VARIANTS[${i}]}
 	MACHINE_NAME=${MACHINE_NAMES[${i}]}
 	VARIANT=${VARIANTS[${i}]}
