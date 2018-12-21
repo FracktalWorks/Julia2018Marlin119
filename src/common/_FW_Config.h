@@ -74,7 +74,7 @@
 #elif BV(JULIA_2018_PRO_DUAL_A)
   #define X_BED_SIZE  370
   #define Y_BED_SIZE  395
-  #define Z_MAX_POS   400
+  #define Z_MAX_POS   405
 #endif
 
 /** Min Pos **/
