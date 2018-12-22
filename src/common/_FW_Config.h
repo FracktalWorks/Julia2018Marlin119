@@ -62,11 +62,11 @@
 #elif BV(JULIA_2018_PRO_SINGLE)
   #define X_BED_SIZE  395
   #define Y_BED_SIZE  395
-  #define Z_MAX_POS   405
+  #define Z_MAX_POS   400
 #elif BV(JULIA_2018_PRO_DUAL)
   #define X_BED_SIZE  370
   #define Y_BED_SIZE  395
-  #define Z_MAX_POS   405
+  #define Z_MAX_POS   400
 #elif BV(JULIA_2018_PRO_SINGLE_A)
   #define X_BED_SIZE  395
   #define Y_BED_SIZE  395
@@ -74,7 +74,7 @@
 #elif BV(JULIA_2018_PRO_DUAL_A)
   #define X_BED_SIZE  370
   #define Y_BED_SIZE  395
-  #define Z_MAX_POS   405
+  #define Z_MAX_POS   400
 #endif
 
 /** Min Pos **/
@@ -227,7 +227,7 @@
   #define Z_MIN_PROBE_REPEATABILITY_TEST
 
   #define AUTO_BED_LEVELING_BILINEAR
-  #define DEBUG_LEVELING_FEATURE
+  // #define DEBUG_LEVELING_FEATURE
 #else   // mesh bed leveling
   #define MESH_BED_LEVELING
   #if BV(JULIA_2018_RPI_E) || BV_PRO()

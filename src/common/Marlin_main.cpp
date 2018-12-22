@@ -2459,8 +2459,17 @@ void clean_up_after_endstop_or_probe_move() {
 
     if (isnan(measured_z)) {
       LCD_MESSAGEPGM(MSG_ERR_PROBING_FAILED);
-      SERIAL_ERROR_START();
-      SERIAL_ERRORLNPGM(MSG_ERR_PROBING_FAILED);
+      
+      /* FRACKTAL WORKS: START */
+      // AUTO BED LEVELING
+      // echo probing failed instead of error to prevent Octoprint screwup
+      
+      // SERIAL_ERROR_START();
+      // SERIAL_ERRORLNPGM(MSG_ERR_PROBING_FAILED);
+      SERIAL_ECHOLNPGM(MSG_ERR_PROBING_FAILED);
+      
+      /* FRACKTAL WORKS: END */
+
     }
 
     #if ENABLED(DEBUG_LEVELING_FEATURE)
