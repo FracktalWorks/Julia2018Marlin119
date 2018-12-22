@@ -2459,10 +2459,12 @@ void clean_up_after_endstop_or_probe_move() {
 
     if (isnan(measured_z)) {
       LCD_MESSAGEPGM(MSG_ERR_PROBING_FAILED);
-      
+
       /* FRACKTAL WORKS: START */
       // AUTO BED LEVELING
       // echo probing failed instead of error to prevent Octoprint screwup
+
+      enqueue_and_echo_commands_now_P(PSTR("M117 PROBING_FAILED"));   // UI warning
       
       // SERIAL_ERROR_START();
       // SERIAL_ERRORLNPGM(MSG_ERR_PROBING_FAILED);
