@@ -2464,7 +2464,8 @@ void clean_up_after_endstop_or_probe_move() {
       // AUTO BED LEVELING
       // echo probing failed instead of error to prevent Octoprint screwup
 
-      enqueue_and_echo_commands_now_P(PSTR("M118 PROBING_FAILED"));   // UI warning
+      // enqueue_and_echo_commands_now_P(PSTR("M118 PROBING_FAILED"));   // UI warning
+      SERIAL_ECHOLNPGM("PROBING_FAILED");
       
       // SERIAL_ERROR_START();
       // SERIAL_ERRORLNPGM(MSG_ERR_PROBING_FAILED);
