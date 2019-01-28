@@ -9837,6 +9837,87 @@ inline void gcode_M226() {
 
 #endif // EXPERIMENTAL_I2CBUS
 
+/* FRACKTAL WORKS: START */
+// Pro Dual ABL Hotend Z-offset
+#if BV(JULIA_2018_PRO_DUAL_A)
+  inline void gcode_M272() {
+    const uint8_t old_tool_index = active_extruder;
+    const bool save = parser.seen('S');
+    float z1, z2, del_z;
+
+    SERIAL_ECHO_START();
+    SERIAL_ECHOLNPAIR("M272 save: ", save);
+
+    // Step 1: Home if unhomed
+    if (axis_unhomed_error()) home_all_axes();
+
+    // Step 2: Zero T1 hotend Z-offset
+    if (save) {
+      hotend_offset[Z_AXIS][1] = 0;
+    }
+
+    // Step 3: Tool change to T0
+    tool_change(0, MMM_TO_MMS(HOMING_FEEDRATE_Z), false);
+    SERIAL_ECHO_START();
+    SERIAL_ECHOLNPAIR("M272 step 3 Z: ", current_position[Z_AXIS]);
+
+    // Step 4: Go to staging XYZ
+    do_blocking_move_to_xy(X_BED_SIZE / 2, Y_BED_SIZE / 2, MMM_TO_MMS(HOMING_FEEDRATE_XY));
+    do_blocking_move_to_z(15, MMM_TO_MMS(HOMING_FEEDRATE_Z));
+    SERIAL_ECHO_START();
+    SERIAL_ECHOPAIR("M272 step 4 X: ", current_position[X_AXIS]);
+    SERIAL_ECHOPAIR(" Y: ", current_position[Y_AXIS]);
+    SERIAL_ECHOLNPAIR(" Z: ", current_position[Z_AXIS]);
+
+    // Step 5: Probe Z
+    gcode_G30();
+    planner.synchronize();
+    z1 = current_position[Z_AXIS];
+    SERIAL_ECHO_START();
+    SERIAL_ECHOLNPAIR("M272 step 5 Z1: ", z1);
+
+    // Step 6: Go to staging Z
+    do_blocking_move_to_z(15, MMM_TO_MMS(HOMING_FEEDRATE_Z));
+    SERIAL_ECHO_START();
+    SERIAL_ECHOLNPAIR("M272 step 6 Z: ", current_position[Z_AXIS]);
+
+    // Step 7: Tool change to T1
+    tool_change(1, MMM_TO_MMS(HOMING_FEEDRATE_Z), false);
+    SERIAL_ECHO_START();
+    SERIAL_ECHOLNPAIR("M272 step 7 Z: ", current_position[Z_AXIS]);
+
+    // Step 8: Probe Z
+    gcode_G30();
+    planner.synchronize();
+    z2 = current_position[Z_AXIS];
+    SERIAL_ECHO_START();
+    SERIAL_ECHOLNPAIR("M272 step 8 Z2: ", z2);
+
+    // Step 9: Go to staging Z
+    do_blocking_move_to_z(15, MMM_TO_MMS(HOMING_FEEDRATE_Z));
+    SERIAL_ECHO_START();
+    SERIAL_ECHOLNPAIR("M272 step 9 Z: ", current_position[Z_AXIS]);
+
+    // Step 10: Calculate offset
+    del_z = z2 + z1;
+    SERIAL_ECHO_START();
+    SERIAL_ECHOLNPAIR("M272 step 10 del Z: ", del_z);
+
+    // Step 11: Set offset
+    if (save) {
+      hotend_offset[Z_AXIS][1] = (-1.0 * del_z);
+      (void) settings.save();
+    }
+    SERIAL_ECHO_START();
+    SERIAL_ECHOLNPAIR("M272 step 11 T1 Z-offset: ", hotend_offset[Z_AXIS][1]);
+
+    // Step 12: T0 and Home
+    tool_change(0, MMM_TO_MMS(HOMING_FEEDRATE_Z), false);
+    home_all_axes();
+  }
+#endif
+/* FRACKTAL WORKS: END */
+
 #if HAS_SERVOS
 
   /**
@@ -12785,6 +12866,13 @@ void process_parsed_command() {
         case 260: gcode_M260(); break;                            // M260: Send Data to i2c slave
         case 261: gcode_M261(); break;                            // M261: Request Data from i2c slave
       #endif
+
+      /* FRACKTAL WORKS: START */
+      // Pro Dual ABL Hotend Z-offset
+      #if BV(JULIA_2018_PRO_DUAL_A)
+        case 272: gcode_M272(); break;                   // Pro Dual ABL Hotend Z-offset calibration
+      #endif
+      /* FRACKTAL WORKS: END */
 
       #if HAS_SERVOS
         case 280: gcode_M280(); break;                            // M280: Set Servo Position
