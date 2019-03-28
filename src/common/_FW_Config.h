@@ -60,16 +60,16 @@
   #define Y_BED_SIZE  250
   #define Z_MAX_POS   300
 #elif BV(JULIA_2018_PRO_SINGLE)
-  #define X_BED_SIZE  395
-  #define Y_BED_SIZE  395
+  #define X_BED_SIZE  400
+  #define Y_BED_SIZE  400
   #define Z_MAX_POS   400
 #elif BV(JULIA_2018_PRO_DUAL)
   #define X_BED_SIZE  370
   #define Y_BED_SIZE  395
   #define Z_MAX_POS   400
 #elif BV(JULIA_2018_PRO_SINGLE_A)
-  #define X_BED_SIZE  395
-  #define Y_BED_SIZE  395
+  #define X_BED_SIZE  400
+  #define Y_BED_SIZE  400
   #define Z_MAX_POS   400
 #elif BV(JULIA_2018_PRO_DUAL_A)
   #define X_BED_SIZE  370
@@ -127,7 +127,7 @@
   #define MANUAL_Y_HOME_POS Y_BED_SIZE
   #define MANUAL_Z_HOME_POS Z_MAX_POS
 #elif BV_PRO_SINGLE()
-  #define MANUAL_X_HOME_POS -15
+  #define MANUAL_X_HOME_POS -20
   #define MANUAL_Y_HOME_POS Y_BED_SIZE
   #define MANUAL_Z_HOME_POS Z_MAX_POS
 #elif BV_PRO_DUAL()
