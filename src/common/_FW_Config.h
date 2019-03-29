@@ -227,7 +227,7 @@
   #define Z_MIN_PROBE_REPEATABILITY_TEST
 
   #define AUTO_BED_LEVELING_BILINEAR
-  // #define DEBUG_LEVELING_FEATURE
+  #define DEBUG_LEVELING_FEATURE
 #else   // mesh bed leveling
   #define MESH_BED_LEVELING
   #if BV(JULIA_2018_RPI_E) || BV_PRO()
