@@ -12395,14 +12395,51 @@ void tool_change(const uint8_t tmp_extruder, const float fr_mm_s/*=0.0*/, bool n
 
           #if ENABLED(SWITCHING_NOZZLE)
             // Always raise by at least 1 to avoid workpiece
-            const float zdiff = hotend_offset[Z_AXIS][active_extruder] - hotend_offset[Z_AXIS][tmp_extruder];
-            current_position[Z_AXIS] += (zdiff > 0.0 ? zdiff : 0.0) + 1;
+
+            /* FRACKTAL WORKS: START */
+            // Tool change prevent crash at HOME
+            const float toolchange_z_raise = 2.0;
+
+            const float zdiff = hotend_offset[Z_AXIS][tmp_extruder] - hotend_offset[Z_AXIS][active_extruder];
+
+            const float tmp_z_move = current_position[Z_AXIS] + MAX(-zdiff, zdiff) + toolchange_z_raise;
+            const bool stop_z_crash = (tmp_z_move > Z_MAX_POS);
+
+            #if ENABLED(DEBUG_LEVELING_FEATURE)
+              if (DEBUGGING(LEVELING)) {
+                SERIAL_ECHOPAIR("FW: tmp_z_move=", tmp_z_move);
+                SERIAL_ECHOLNPAIR(", stop_z_crash=", stop_z_crash);
+              }
+            #endif
+
+            current_position[Z_AXIS] += MAX(-zdiff, 0.0) + toolchange_z_raise;
+            NOMORE(current_position[Z_AXIS], soft_endstop_max[Z_AXIS]);
+            /* FRACKTAL WORKS: END */
+
             planner.buffer_line_kinematic(current_position, planner.max_feedrate_mm_s[Z_AXIS], active_extruder);
             move_nozzle_servo(tmp_extruder);
           #endif
 
           const float xdiff = hotend_offset[X_AXIS][tmp_extruder] - hotend_offset[X_AXIS][active_extruder],
                       ydiff = hotend_offset[Y_AXIS][tmp_extruder] - hotend_offset[Y_AXIS][active_extruder];
+
+          /* FRACKTAL WORKS: START */
+          // Tool change prevent crash at HOME
+          const float tmp_x_move = current_position[X_AXIS] - xdiff;
+          const bool stop_x_crash = (tmp_x_move < X_HOME_POS);
+
+          #if ENABLED(DEBUG_LEVELING_FEATURE)
+            if (DEBUGGING(LEVELING)) {
+              SERIAL_ECHOPAIR("FW: tmp_x_move=", tmp_x_move);
+              SERIAL_ECHOLNPAIR(", stop_x_crash=", stop_x_crash);
+            }
+          #endif
+
+          if (stop_x_crash) {
+            SERIAL_ECHOLNPAIR("FW: Changing destination[X_AXIS] to stop crash, destination[X_AXIS]=", destination[X_AXIS] + xdiff);
+            destination[X_AXIS] += xdiff;
+          }
+          /* FRACKTAL WORKS: END */
 
           #if ENABLED(DEBUG_LEVELING_FEATURE)
             if (DEBUGGING(LEVELING)) {
@@ -12423,7 +12460,17 @@ void tool_change(const uint8_t tmp_extruder, const float fr_mm_s/*=0.0*/, bool n
 
         #if ENABLED(SWITCHING_NOZZLE)
           // The newly-selected extruder Z is actually at...
-          current_position[Z_AXIS] -= zdiff;
+
+          /* FRACKTAL WORKS: START */
+          // Tool change prevent crash at HOME
+          if (stop_z_crash) {
+            SERIAL_ECHOPAIR("FW: Stop Z crash, expected current_position[Z_AXIS]=", current_position[Z_AXIS] + zdiff);
+            SERIAL_ECHOLNPAIR(", corrected current_position[Z_AXIS]=", current_position[Z_AXIS]);
+          } else {
+            current_position[Z_AXIS] += zdiff;
+          }
+          /* FRACKTAL WORKS: END */
+
         #endif
 
         // Tell the planner the new "current position"
