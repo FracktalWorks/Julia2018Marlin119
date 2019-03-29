@@ -12388,39 +12388,21 @@ void tool_change(const uint8_t tmp_extruder, const float fr_mm_s/*=0.0*/, bool n
 
         #else // !DUAL_X_CARRIAGE
 
-          const float xdiff = hotend_offset[X_AXIS][tmp_extruder] - hotend_offset[X_AXIS][active_extruder],
-                      ydiff = hotend_offset[Y_AXIS][tmp_extruder] - hotend_offset[Y_AXIS][active_extruder];
-
-          if (current_position[X_AXIS] - xdiff <= MANUAL_X_HOME_POS)
-            no_move = true;
-
-          bool stop_z_crash = false;
-          #if ENABLED(SWITCHING_NOZZLE)
-            // Always raise by at least 1 to avoid workpiece
-            const float zdiff = hotend_offset[Z_AXIS][active_extruder] - hotend_offset[Z_AXIS][tmp_extruder];
-            float tmp_z_max = Z_MAX_POS - (zdiff < 0 ? -1 * zdiff : zdiff) - 1;
-            // SERIAL_ECHOLNPAIR("tmp_z_max ", tmp_z_max);
-            stop_z_crash = current_position[Z_AXIS] > tmp_z_max;
-            // SERIAL_ECHOLNPAIR("stop_z_crash ", stop_z_crash);
-          #endif
-
           set_destination_from_current();
-          #if ENABLED(PARKING_EXTRUDER)
+          #if ENABLED(PARKING_EXTRUDER) // Dual Parking extruder
             parking_extruder_tool_change(tmp_extruder, no_move);
           #endif
 
           #if ENABLED(SWITCHING_NOZZLE)
             // Always raise by at least 1 to avoid workpiece
-            // const float zdiff = hotend_offset[Z_AXIS][active_extruder] - hotend_offset[Z_AXIS][tmp_extruder];
-            if (!stop_z_crash) {
-              current_position[Z_AXIS] += (zdiff > 0.0 ? zdiff : 0.0) + 1;
-              planner.buffer_line_kinematic(current_position, planner.max_feedrate_mm_s[Z_AXIS], active_extruder);
-            }
+            const float zdiff = hotend_offset[Z_AXIS][active_extruder] - hotend_offset[Z_AXIS][tmp_extruder];
+            current_position[Z_AXIS] += (zdiff > 0.0 ? zdiff : 0.0) + 1;
+            planner.buffer_line_kinematic(current_position, planner.max_feedrate_mm_s[Z_AXIS], active_extruder);
             move_nozzle_servo(tmp_extruder);
           #endif
 
-          // const float xdiff = hotend_offset[X_AXIS][tmp_extruder] - hotend_offset[X_AXIS][active_extruder],
-          //             ydiff = hotend_offset[Y_AXIS][tmp_extruder] - hotend_offset[Y_AXIS][active_extruder];
+          const float xdiff = hotend_offset[X_AXIS][tmp_extruder] - hotend_offset[X_AXIS][active_extruder],
+                      ydiff = hotend_offset[Y_AXIS][tmp_extruder] - hotend_offset[Y_AXIS][active_extruder];
 
           #if ENABLED(DEBUG_LEVELING_FEATURE)
             if (DEBUGGING(LEVELING)) {
@@ -12441,8 +12423,7 @@ void tool_change(const uint8_t tmp_extruder, const float fr_mm_s/*=0.0*/, bool n
 
         #if ENABLED(SWITCHING_NOZZLE)
           // The newly-selected extruder Z is actually at...
-          if (!stop_z_crash) 
-            current_position[Z_AXIS] -= zdiff;
+          current_position[Z_AXIS] -= zdiff;
         #endif
 
         // Tell the planner the new "current position"
@@ -12474,8 +12455,7 @@ void tool_change(const uint8_t tmp_extruder, const float fr_mm_s/*=0.0*/, bool n
         #if ENABLED(SWITCHING_NOZZLE)
           else {
             // Move back down. (Including when the new tool is higher.)
-            if (!stop_z_crash)
-              do_blocking_move_to_z(destination[Z_AXIS], planner.max_feedrate_mm_s[Z_AXIS]);
+            do_blocking_move_to_z(destination[Z_AXIS], planner.max_feedrate_mm_s[Z_AXIS]);
           }
         #endif
       } // (tmp_extruder != active_extruder)
@@ -12525,7 +12505,7 @@ void tool_change(const uint8_t tmp_extruder, const float fr_mm_s/*=0.0*/, bool n
     #endif
 
     SERIAL_ECHO_START();
-    SERIAL_ECHOLNPAIR(MSG_ACTIVE_EXTRUDER, int(active_extruder));
+    SERIAL_ECHOLNPAIR(MSG_ACTIVE_EXTRUDER, (int)active_extruder);
 
   #endif // !MIXING_EXTRUDER || MIXING_VIRTUAL_TOOLS <= 1
 }
