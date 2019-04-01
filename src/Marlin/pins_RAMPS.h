@@ -56,7 +56,7 @@
 // Servos
 //
 #ifdef IS_RAMPS_13
-  #define SERVO0_PIN        7   // RAMPS_13 // Will conflict with BTN_EN2 on LCD_I2C_VIKI
+  #define SERVO0_PIN        7 // RAMPS_13 // Will conflict with BTN_EN2 on LCD_I2C_VIKI
 #else
   #define SERVO0_PIN       11
 #endif
@@ -82,7 +82,7 @@
 // Z Probe (when not Z_MIN_PIN)
 //
 #ifndef Z_MIN_PROBE_PIN
-  #define Z_MIN_PROBE_PIN  32
+ #define Z_MIN_PROBE_PIN  57  // 32
 #endif
 
 //
@@ -249,7 +249,12 @@
 #elif DISABLED(IS_RAMPS_SF)                    // Not Spindle, Fan (i.e., "EFBF" or "EFBE")
   #define HEATER_BED_PIN   RAMPS_D8_PIN
   #if HOTENDS == 1
-    #define FAN1_PIN       MOSFET_D_PIN
+    
+    /* FRACKTAL WORKS: START */
+    // Remove fan 1
+    // #define FAN1_PIN       MOSFET_D_PIN
+    /* FRACKTAL WORKS: END */
+
   #else
     #define HEATER_1_PIN   MOSFET_D_PIN
   #endif

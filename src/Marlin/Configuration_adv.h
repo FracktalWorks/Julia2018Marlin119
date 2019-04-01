@@ -34,6 +34,57 @@
 #define CONFIGURATION_ADV_H
 #define CONFIGURATION_ADV_H_VERSION 010109
 
+//===========================================================================
+//========================= Fracktal Works Julia 2018 =======================
+//===========================================================================
+
+#include "_FracktalWorks.h"
+
+#if BV(JULIA_2018_GLCD) || BV(JULIA_2018_GLCD_HB)
+	#define ADVANCED_PAUSE_FEATURE
+#endif
+
+#define HOME_Y_BEFORE_X
+
+#define DEFAULT_STEPPER_DEACTIVE_TIME 0
+
+#define THERMAL_PROTECTION_PERIOD       80     // Seconds
+#define THERMAL_PROTECTION_HYSTERESIS   15     // Degrees Celsius
+#define WATCH_TEMP_PERIOD               120    // Seconds
+
+#if ENABLED(THERMAL_PROTECTION_BED)
+  #define THERMAL_PROTECTION_BED_PERIOD       40 // Seconds
+  #define THERMAL_PROTECTION_BED_HYSTERESIS   15 // Degrees Celsius
+  #define WATCH_BED_TEMP_PERIOD               80 // Seconds
+#endif
+
+#define LCD_INFO_MENU
+#define STATUS_MESSAGE_SCROLLING
+
+#define BABYSTEPPING
+#if ENABLED(BABYSTEPPING)
+  #define BABYSTEP_MULTIPLICATOR 25
+  #define DOUBLECLICK_FOR_Z_BABYSTEPPING
+#endif
+
+#if ENABLED(FW_BABYSTEP)
+  #define FW_BABYSTEP_MULTIPLICATOR 25
+  #define FW_BABYSTEP_LIMIT 1.0
+  #define FW_BABYSTEP_DOUBLECLICK
+  #define FW_DOUBLECLICK_MAX_INTERVAL 1250
+#endif
+
+#if ENABLED(BABYSTEPPING) || ENABLED(FW_BABYSTEP)
+  #define FW_BABYSTEP_LIMIT 1.0
+#endif
+
+
+// #define LIN_ADVANCE
+
+//===========================================================================
+//===================== End of Fracktal Works Julia 2018 ====================
+//===========================================================================
+
 // @section temperature
 
 //===========================================================================
@@ -75,8 +126,8 @@
  * THERMAL_PROTECTION_HYSTERESIS and/or THERMAL_PROTECTION_PERIOD
  */
 #if ENABLED(THERMAL_PROTECTION_HOTENDS)
-  #define THERMAL_PROTECTION_PERIOD 40        // Seconds
-  #define THERMAL_PROTECTION_HYSTERESIS 4     // Degrees Celsius
+  //#define THERMAL_PROTECTION_PERIOD 40        // Seconds
+  //#define THERMAL_PROTECTION_HYSTERESIS 4     // Degrees Celsius
 
   /**
    * Whenever an M104, M109, or M303 increases the target temperature, the
@@ -90,7 +141,7 @@
    * and/or decrease WATCH_TEMP_INCREASE. WATCH_TEMP_INCREASE should not be set
    * below 2.
    */
-  #define WATCH_TEMP_PERIOD 20                // Seconds
+  //#define WATCH_TEMP_PERIOD 20                // Seconds
   #define WATCH_TEMP_INCREASE 2               // Degrees Celsius
 #endif
 
@@ -98,13 +149,13 @@
  * Thermal Protection parameters for the bed are just as above for hotends.
  */
 #if ENABLED(THERMAL_PROTECTION_BED)
-  #define THERMAL_PROTECTION_BED_PERIOD 20    // Seconds
-  #define THERMAL_PROTECTION_BED_HYSTERESIS 2 // Degrees Celsius
+  //#define THERMAL_PROTECTION_BED_PERIOD 20    // Seconds
+  //#define THERMAL_PROTECTION_BED_HYSTERESIS 2 // Degrees Celsius
 
   /**
    * As described above, except for the bed (M140/M190/M303).
    */
-  #define WATCH_BED_TEMP_PERIOD 60                // Seconds
+  //#define WATCH_BED_TEMP_PERIOD 60                // Seconds
   #define WATCH_BED_TEMP_INCREASE 2               // Degrees Celsius
 #endif
 
@@ -407,7 +458,7 @@
 // Default stepper release if idle. Set to 0 to deactivate.
 // Steppers will shut down DEFAULT_STEPPER_DEACTIVE_TIME seconds after the last move when DISABLE_INACTIVE_? is true.
 // Time can be set by M18 and M84.
-#define DEFAULT_STEPPER_DEACTIVE_TIME 120
+// #define DEFAULT_STEPPER_DEACTIVE_TIME 120
 #define DISABLE_INACTIVE_X true
 #define DISABLE_INACTIVE_Y true
 #define DISABLE_INACTIVE_Z true  // set to false if the nozzle will fall down on your printed part when print has finished.
@@ -745,7 +796,7 @@
 #if ENABLED(BABYSTEPPING)
   //#define BABYSTEP_XY              // Also enable X/Y Babystepping. Not supported on DELTA!
   #define BABYSTEP_INVERT_Z false    // Change if Z babysteps should go the other way
-  #define BABYSTEP_MULTIPLICATOR 1   // Babysteps are very small. Increase for faster motion.
+  //#define BABYSTEP_MULTIPLICATOR 1   // Babysteps are very small. Increase for faster motion.
   //#define BABYSTEP_ZPROBE_OFFSET   // Enable to combine M851 and Babystepping
   //#define DOUBLECLICK_FOR_Z_BABYSTEPPING // Double-click on the Status Screen for Z Babystepping.
   #define DOUBLECLICK_MAX_INTERVAL 1250 // Maximum interval between clicks, in milliseconds.

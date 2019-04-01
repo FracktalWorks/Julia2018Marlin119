@@ -61,9 +61,13 @@
   #include "fwretract.h"
 #endif
 
-#if ENABLED(POWER_LOSS_RECOVERY)
-  #include "power_loss_recovery.h"
+/* FRACKTAL WORKS: START */
+// PRINT RESTORE
+#if ENABLED(PRINT_RESTORE)
+  #include <avr/wdt.h>
+  #include "print_restore.h"
 #endif
+/* FRACKTAL WORKS: END */
 
 #if ENABLED(STATUS_MESSAGE_SCROLLING)
   #if LONG_FILENAME_LENGTH > CHARSIZE * 2 * (LCD_WIDTH)
@@ -167,6 +171,20 @@ uint16_t max_display_update_time = 0;
     uint8_t driverPercent[XYZE];
   #endif
 
+  
+  /* FRACKTAL WORKS: START */
+  // LCD MENU WORKS
+
+  // lcd_implementation_drawmenu_static(const uint8_t row, const char* pstr, const bool center=true, const bool invert=false, const char *valstr=NULL)
+  #define FW_LCD_TXT(row, val) lcd_implementation_drawmenu_static(row, PSTR(val), false) //, false, NULL)
+  #define FW_LCD_TXT_C(row, val) lcd_implementation_drawmenu_static(row, PSTR(val), true) //, false, NULL)
+
+  #if ENABLED(FW_BABYSTEP)
+    //long fw_babysteps_done = 0;
+    static void lcd_fw_babystep();
+  #endif
+  /* FRACKTAL WORKS: END */
+
   ////////////////////////////////////////////
   ///////////////// Menu Tree ////////////////
   ////////////////////////////////////////////
@@ -174,6 +192,12 @@ uint16_t max_display_update_time = 0;
   void lcd_main_menu();
   void lcd_tune_menu();
   void lcd_prepare_menu();
+  /* FRACKTAL WORKS: START */
+  // BED LEVELING
+  void lcd_bed_menu();
+  /* FRACKTAL WORKS: END */
+
+
   void lcd_move_menu();
   void lcd_control_menu();
   void lcd_control_temperature_menu();
@@ -505,7 +529,7 @@ uint16_t max_display_update_time = 0;
           if (currentScreen == lcd_status_screen)
             doubleclick_expire_ms = millis() + DOUBLECLICK_MAX_INTERVAL;
         }
-        else if (screen == lcd_status_screen && currentScreen == lcd_main_menu && PENDING(millis(), doubleclick_expire_ms) && (planner.movesplanned() || IS_SD_PRINTING))
+        else if (screen == lcd_status_screen && currentScreen == lcd_main_menu && PENDING(millis(), doubleclick_expire_ms) && (planner.movesplanned() || IS_SD_PRINTING) && !planner.leveling_active)
           screen =
             #if ENABLED(BABYSTEP_ZPROBE_OFFSET)
               lcd_babystep_zoffset
@@ -514,6 +538,21 @@ uint16_t max_display_update_time = 0;
             #endif
           ;
       #endif
+
+      /* FRACKTAL WORKS: START */
+      // FW babystep doubleclick
+      #if ENABLED(FW_BABYSTEP) && ENABLED(FW_BABYSTEP_DOUBLECLICK)
+        static millis_t fw_doubleclick_expire_ms = 0;
+        // Going to lcd_main_menu from status screen? Remember first click time.
+        // Going back to status screen within a very short time? Go to Z babystepping.
+        if (screen == lcd_main_menu) {
+          if (currentScreen == lcd_status_screen)
+            fw_doubleclick_expire_ms = millis() + FW_DOUBLECLICK_MAX_INTERVAL;
+        }
+        else if (screen == lcd_status_screen && currentScreen == lcd_main_menu && PENDING(millis(), fw_doubleclick_expire_ms) && (planner.movesplanned() || IS_SD_PRINTING) && planner.leveling_active)
+          screen = lcd_fw_babystep;
+      #endif
+      /* FRACKTAL WORKS: END */
 
       currentScreen = screen;
       encoderPosition = encoder;
@@ -859,85 +898,108 @@ void lcd_quick_feedback(const bool clear_buttons) {
     void lcd_sdcard_stop() {
       wait_for_heatup = wait_for_user = false;
       abort_sd_printing = true;
+      /* FRACKTAL WORKS: START */
+      // PRINT RESTORE
+      #if ENABLED(PRINT_RESTORE)
+        /*
+        card.openPrintRestoreBin(false);
+        print_restore_info.valid_head = print_restore_info.valid_foot = 0;
+        card.savePrintRestoreInfo();
+        card.closePrintRestoreBin();
+        */
+        card.removePrintRestoreBin();
+      #endif
+      /* FRACKTAL WORKS: END */
       lcd_setstatusPGM(PSTR(MSG_PRINT_ABORTED), -1);
       lcd_return_to_status();
     }
 
   #endif // SDSUPPORT
 
-  #if ENABLED(POWER_LOSS_RECOVERY)
+  /* FRACKTAL WORKS: START */
+  // PRINT RESTORE
+  #if ENABLED(PRINT_RESTORE)
 
-    static void lcd_power_loss_recovery_resume() {
-      char cmd[20];
-
+    static void lcd_sdcard_recover_job() {
       // Return to status now
       lcd_return_to_status();
-
-      // Turn leveling off and home
-      enqueue_and_echo_commands_P(PSTR("M420 S0\nG28 R0"
-        #if ENABLED(MARLIN_DEV_MODE)
-          " S"
-        #elif !IS_KINEMATIC
-          " X Y"
-        #endif
-      ));
-
-      #if HAS_HEATED_BED
-        const int16_t bt = job_recovery_info.target_temperature_bed;
-        if (bt) {
-          // Restore the bed temperature
-          sprintf_P(cmd, PSTR("M190 S%i"), bt);
-          enqueue_and_echo_command(cmd);
-        }
-      #endif
-
-      // Restore all hotend temperatures
-      HOTEND_LOOP() {
-        const int16_t et = job_recovery_info.target_temperature[e];
-        if (et) {
-          #if HOTENDS > 1
-            sprintf_P(cmd, PSTR("T%i"), e);
-            enqueue_and_echo_command(cmd);
-          #endif
-          sprintf_P(cmd, PSTR("M109 S%i"), et);
-          enqueue_and_echo_command(cmd);
-        }
-      }
-
-      #if HOTENDS > 1
-        sprintf_P(cmd, PSTR("T%i"), job_recovery_info.active_hotend);
+      
+      if (!card.recoveryFileExists()) {
+        // job_recovery_phase = JOB_RECOVERY_IDLE;
+        print_restore_phase = IDLE;
+        SERIAL_PROTOCOLLNPAIR("Failed ressurect file: ", CardReader::PrintRestoreGcodeFilename);
+        //SERIAL_PROTOCOLCHAR('.');
+        //SERIAL_EOL();
+        
+      } else {
+        // job_recovery_phase = JOB_RECOVERY_YES;
+        print_restore_phase = START;
+        
+        SERIAL_PROTOCOLLNPAIR("Opening ressurect file: ", CardReader::PrintRestoreGcodeFilename);
+        
+        //card.openAndPrintFile(CardReader::PrintRestoreGcodeFilename);
+        //card.startFileprint();
+        
+        char cmd[40];
+        sprintf_P(cmd, PSTR("M23 %s"), CardReader::PrintRestoreGcodeFilename);  //opens a file for reading from the SD card
         enqueue_and_echo_command(cmd);
-      #endif
-
-      // Restore print cooling fan speeds
-      for (uint8_t i = 0; i < FAN_COUNT; i++) {
-        int16_t f = job_recovery_info.fanSpeeds[i];
-        if (f) {
-          sprintf_P(cmd, PSTR("M106 P%i S%i"), i, f);
-          enqueue_and_echo_command(cmd);
-        }
+        enqueue_and_echo_commands_P(PSTR("M24"));
+        enqueue_and_echo_commands_P(PSTR("M31"));
       }
 
-      // Start draining the job recovery command queue
-      job_recovery_phase = JOB_RECOVERY_YES;
+      /*
+      // Resume the print job timer
+      if (print_restore_info.print_job_elapsed)
+        print_job_timer.resume(print_restore_info.print_job_elapsed);
+      */
+    }
+    
+    static bool allow_restart = false;
+
+    static void lcd_sdcard_recover_stop_msg() {
+      FW_LCD_TXT(0, "Click dial to");
+      FW_LCD_TXT(1, "restart printer");
+      FW_LCD_TXT(2, "and flush");
+      FW_LCD_TXT(3, "recovery info");
+
+      if (lcd_clicked && allow_restart) {
+        wdt_enable(WDTO_15MS);
+        while (1) {}  // resetf
+      }
     }
 
-    static void lcd_power_loss_recovery_cancel() {
-      card.removeJobRecoveryFile();
-      card.autostart_index = 0;
-      lcd_return_to_status();
-    }
+    static void lcd_sdcard_recover_stop() {
+      lcd_goto_screen(lcd_sdcard_recover_stop_msg);
 
+      if (card.recoveryFileExists()) {
+        card.removeFile(CardReader::PrintRestoreGcodeFilename);
+      }
+
+      card.removePrintRestoreBin();
+      thermalManager.disable_all_heaters();
+      disable_all_steppers();
+      _delay_ms(600);
+
+      cli(); // Stop interrupts
+      _delay_ms(200); //Wait to ensure all interrupts routines stopped
+      thermalManager.disable_all_heaters(); //turn off heaters again
+
+      allow_restart = true;
+
+      // LCD_MESSAGEPGM(WELCOME_MSG);
+      // lcd_return_to_status();
+    }
+    
     static void lcd_job_recovery_menu() {
       defer_return_to_status = true;
       START_MENU();
-      STATIC_ITEM(MSG_POWER_LOSS_RECOVERY);
-      MENU_ITEM(function, MSG_RESUME_PRINT, lcd_power_loss_recovery_resume);
-      MENU_ITEM(function, MSG_STOP_PRINT, lcd_power_loss_recovery_cancel);
+      MENU_ITEM(function, MSG_RESUME_PRINT, lcd_sdcard_recover_job);
+      MENU_ITEM(function, MSG_STOP_PRINT, lcd_sdcard_recover_stop);
       END_MENU();
     }
 
-  #endif // POWER_LOSS_RECOVERY
+  #endif // PRINT_RESTORE
+  /* FRACKTAL WORKS: END */
 
   #if ENABLED(MENU_ITEM_CASE_LIGHT)
 
@@ -1109,10 +1171,27 @@ void lcd_quick_feedback(const bool clear_buttons) {
         MENU_ITEM_EDIT_CALLBACK(bool, MSG_CASE_LIGHT, (bool*)&case_light_on, update_case_light);
     #endif
 
-    if (planner.movesplanned() || IS_SD_PRINTING)
+    /* FRACKTAL WORKS: START */
+    // LCD Menu Works
+    if (planner.movesplanned() || IS_SD_PRINTING) {
+      #if ENABLED(FW_BABYSTEP) || ENABLED(BABYSTEPPING)
+        #if HAS_LEVELING
+          if (planner.leveling_active)
+            MENU_ITEM(submenu, "Tune Mesh Z", lcd_fw_babystep); //lcd_babystep_z);
+          else
+        #endif
+            MENU_ITEM(submenu, MSG_BABYSTEP_Z, lcd_babystep_z);
+      #endif
+    } else {
+      MENU_ITEM(submenu, "Bed Calibration", lcd_bed_menu);
+    }
+    /* FRACKTAL WORKS: END */
+
+    if (planner.movesplanned() || IS_SD_PRINTING) {
       MENU_ITEM(submenu, MSG_TUNE, lcd_tune_menu);
-    else
+    } else {
       MENU_ITEM(submenu, MSG_PREPARE, lcd_prepare_menu);
+    }
 
     MENU_ITEM(submenu, MSG_CONTROL, lcd_control_menu);
 
@@ -1150,6 +1229,41 @@ void lcd_quick_feedback(const bool clear_buttons) {
 
     END_MENU();
   }
+
+  #if ENABLED(FW_BABYSTEP)
+    float fw_round_multiplicator(float val, float nearstOf, float fairness = 0.5) {
+      return FLOOR(val / nearstOf + fairness) * nearstOf;
+    }
+
+    void _lcd_fw_babystep() {
+      if (use_click()) {
+        (void) settings.save();
+        return lcd_goto_previous_menu_no_defer(); 
+      }
+      ENCODER_DIRECTION_NORMAL();
+      if (encoderPosition) {
+        const float increment = ((int32_t)encoderPosition * (FW_BABYSTEP_MULTIPLICATOR)) / (float)planner.axis_steps_per_mm[Z_AXIS];
+        encoderPosition = 0;
+        lcdDrawUpdate = LCDVIEW_REDRAW_NOW;
+        if (mbl.z_offset + increment > FW_BABYSTEP_LIMIT)
+          mbl.z_offset = FW_BABYSTEP_LIMIT;
+        else if (mbl.z_offset + increment < -1 * FW_BABYSTEP_LIMIT)
+          mbl.z_offset = -1 * FW_BABYSTEP_LIMIT;
+        else
+          mbl.z_offset = fw_round_multiplicator(mbl.z_offset + increment, 0.001f * FW_BABYSTEP_MULTIPLICATOR);
+        //fw_babysteps_done += babystep_increment;
+      }
+      if (lcdDrawUpdate)
+        lcd_implementation_drawedit(PSTR("Tune Mesh Z"), ftostr43sign(mbl.z_offset)); // ftostr43sign(babystep_total));
+    }
+
+    void lcd_fw_babystep() { 
+      lcd_goto_screen(_lcd_fw_babystep); 
+      //fw_babysteps_done = 0; 
+      defer_return_to_status = true; 
+    }
+
+  #endif // FW_BABYSTEP
 
   /**
    *
@@ -1894,6 +2008,14 @@ void lcd_quick_feedback(const bool clear_buttons) {
 
     static uint8_t manual_probe_index;
 
+    /* FRACKTAL WORKS: START */
+    // BED LEVELING
+    float temp_z_home_offset;
+    bool is_advanced_bed_leveling;
+    
+    void ABL_Done();
+    /* FRACKTAL WORKS: END */
+
     // LCD probed points are from defaults
     constexpr uint8_t total_probe_points = (
       #if ENABLED(AUTO_BED_LEVELING_3POINT)
@@ -1938,6 +2060,15 @@ void lcd_quick_feedback(const bool clear_buttons) {
     void _lcd_level_bed_get_z() {
       ENCODER_DIRECTION_NORMAL();
 
+      /* FRACKTAL WORKS: START */
+      // BED LEVELING
+      defer_return_to_status = true;
+
+      if (is_advanced_bed_leveling && manual_probe_index >= total_probe_points) {
+        lcd_goto_screen(ABL_Done);
+      }
+      /* FRACKTAL WORKS: END */
+
       if (use_click()) {
 
         //
@@ -1950,7 +2081,12 @@ void lcd_quick_feedback(const bool clear_buttons) {
           // The last G29 records the point and enables bed leveling
           //
           lcd_wait_for_move = true;
-          lcd_goto_screen(_lcd_level_bed_done);
+          /* FRACKTAL WORKS: START */
+          // BED LEVELING
+          // lcd_goto_screen(_lcd_level_bed_done);
+          if (!is_advanced_bed_leveling)
+            lcd_goto_screen(_lcd_level_bed_done);
+          /* FRACKTAL WORKS: END */
           #if ENABLED(MESH_BED_LEVELING)
             enqueue_and_echo_commands_P(PSTR("G29 S2"));
           #elif ENABLED(PROBE_MANUALLY)
@@ -2015,6 +2151,10 @@ void lcd_quick_feedback(const bool clear_buttons) {
      *         Move to the first probe position
      */
     void _lcd_level_bed_homing_done() {
+      /* FRACKTAL WORKS: START */
+      // PRINT RESTORE
+      defer_return_to_status = true;
+      /* FRACKTAL WORKS: END */
       if (lcdDrawUpdate) lcd_implementation_drawedit(PSTR(MSG_LEVEL_BED_WAITING));
       if (use_click()) {
         manual_probe_index = 0;
@@ -3297,6 +3437,247 @@ void lcd_quick_feedback(const bool clear_buttons) {
     END_MENU();
   }
 
+  /* FRACKTAL WORKS: START */
+  /*
+  *
+  * Bed Leveling Screens
+  *
+  */
+
+  bool QBL_movesFinished() {
+    // return !(planner.blocks_queued() || stepper.cleaning_buffer_counter);
+    return !(planner.has_blocks_queued() || planner.cleaning_buffer_counter);
+  }
+  
+  bool QBL_canMove() {
+    return lcd_clicked && QBL_movesFinished();
+  }
+    
+  void ABL_DoneMessage() {
+    FW_LCD_TXT_C(2, "Advanced Leveling");
+    FW_LCD_TXT_C(3, "Completed!");
+
+    if (QBL_movesFinished()) {
+      lcd_return_to_status();
+    }
+  }
+
+  void ABL_Done() {
+    lcd_goto_screen(ABL_DoneMessage);
+    lcd_completion_feedback();
+
+    is_advanced_bed_leveling = false;
+    // lcd_goto_previous_menu();
+    defer_return_to_status = false;
+    home_offset[Z_AXIS] = temp_z_home_offset; //restore z offset back
+    (void) settings.save();
+
+    #if HAS_LEVELING
+      // Leveling off before G92 or G28
+      enqueue_and_echo_commands_P(PSTR("M420 S0 Z0"));
+    #endif
+    // Home axes
+    enqueue_and_echo_commands_P(PSTR("G28"));
+  }
+  
+  void ABL_continueMessage() {
+    FW_LCD_TXT(0, "Slide a paper under");
+    FW_LCD_TXT(1, "nozzle while turning");
+    FW_LCD_TXT(2, "the dial at the");
+    FW_LCD_TXT(3, "next 4 points");
+    
+    if (QBL_canMove()) {
+      lcdDrawUpdate = LCDVIEW_CALL_REDRAW_NEXT;
+      //lcd_goto_screen(_lcd_level_bed_homing);
+      lcd_goto_screen(_lcd_level_bed_homing_done);
+    }
+  }
+ 
+  void QBL_DoneMessage() {
+    FW_LCD_TXT_C(2, "Quick Leveling");
+    FW_LCD_TXT_C(3, "Completed!");
+    
+    if (QBL_movesFinished()) {
+      lcd_return_to_status();
+    }
+  }
+
+  void QBL_Done() {
+    lcd_goto_screen(QBL_DoneMessage);
+    lcd_completion_feedback();
+
+    is_advanced_bed_leveling = false;
+    // lcd_goto_previous_menu();
+    // lcd_completion_feedback();
+    defer_return_to_status = false;
+    home_offset[Z_AXIS] = temp_z_home_offset; //restore z offset back
+
+    #if HAS_LEVELING
+      // Leveling off before G92 or G28
+      enqueue_and_echo_commands_P(PSTR("M420 S0 Z0"));
+    #endif
+    // Home axes
+    enqueue_and_echo_commands_P(PSTR("G28"));
+  }
+  
+  void QBL_ThirdPositionMessage() {
+    FW_LCD_TXT(0, "Lock back leveling");
+    FW_LCD_TXT(1, "knob clockwise");
+    FW_LCD_TXT(2, "and click the dial"); 
+    
+    if (QBL_canMove()) {
+    // if (lcd_clicked) {
+      defer_return_to_status = true;
+      if (!is_advanced_bed_leveling) {
+        lcd_goto_screen(QBL_Done);
+      } else {
+        lcd_goto_screen(ABL_continueMessage);
+      }
+    }
+    
+  }
+
+  void QBL_ThirdPosition() {
+    // lcdDrawUpdate = LCDVIEW_CALL_NO_REDRAW;
+    lcd_goto_screen(QBL_ThirdPositionMessage);
+    
+    enqueue_and_echo_commands_P(PSTR("G1 F9000"));
+    enqueue_and_echo_commands_P(PSTR("G1 Z20"));
+    enqueue_and_echo_commands_P(PSTR("G1 X100 Y197"));
+    enqueue_and_echo_commands_P(PSTR("G1 X100 Y197 Z0"));
+  }
+
+
+
+  void QBL_SecondPositionMessage() {
+    FW_LCD_TXT(0, "Lock left leveling");
+    FW_LCD_TXT(1, "knob clockwise");
+    FW_LCD_TXT(2, "and click the dial");
+    
+    if (QBL_canMove()) {
+      QBL_ThirdPosition();
+    }
+  }
+
+  void QBL_SecondPosition() {
+    // lcdDrawUpdate = LCDVIEW_CALL_NO_REDRAW;
+    lcd_goto_screen(QBL_SecondPositionMessage);
+
+    enqueue_and_echo_commands_P(PSTR("G1 F9000"));
+    enqueue_and_echo_commands_P(PSTR("G1 Z20"));
+    enqueue_and_echo_commands_P(PSTR("G1 X25.6 Y21"));
+    enqueue_and_echo_commands_P(PSTR("G1 X25.6 Y21 Z0"));
+    
+  }
+
+
+  void QBL_FirstPositionMessage() {
+    FW_LCD_TXT(0, "Lock right leveling");
+    FW_LCD_TXT(1, "knob clockwise");
+    FW_LCD_TXT(2, "and click the dial");
+    
+    if (QBL_canMove()) {
+      QBL_SecondPosition();
+    }
+  }
+
+  void QBL_FirstPosition() {
+    // lcdDrawUpdate = LCDVIEW_CALL_NO_REDRAW;
+    lcd_goto_screen(QBL_FirstPositionMessage);
+
+    enqueue_and_echo_commands_P(PSTR("G1 F9000"));
+    enqueue_and_echo_commands_P(PSTR("G1 X171 Y21"));
+    enqueue_and_echo_commands_P(PSTR("G1 X171 Y21 Z0"));
+  }
+
+  void QBL_UnlockMessage() {
+    FW_LCD_TXT(0, "Unlock all leveling");
+    FW_LCD_TXT(1, "knobs anti-clockwise");
+    FW_LCD_TXT(2, "and click the dial");
+
+    if (QBL_canMove()) {
+      QBL_FirstPosition();
+    }
+  }
+
+   /**
+   * Step 4: Display "Click to Begin", wait for click
+   *         Move to the first probe position
+   */
+  void QBL_UnlockPosition() {
+    lcd_goto_screen(QBL_UnlockMessage);
+    enqueue_and_echo_commands_P(PSTR("G1 X100 Y100 Z50"));
+  }
+
+  /**
+   * Step 4: Display "Click to Begin", wait for click
+   *         Move to the first probe position
+   */
+  void QBL_HomingDone() {
+    if (lcdDrawUpdate) 
+      lcd_implementation_drawedit(PSTR(MSG_LEVEL_BED_WAITING));
+    if (lcd_clicked) {
+      QBL_UnlockPosition();
+    }
+
+  }
+
+  /**
+  * Step 2: Display "Homing XYZ" - Wait for homing to finish
+  */
+  void QBL_Home() {
+    if (lcdDrawUpdate) 
+      lcd_implementation_drawedit(PSTR(MSG_LEVEL_BED_HOMING), NULL);
+    lcdDrawUpdate = LCDVIEW_CALL_NO_REDRAW;
+    // if (axis_homed[X_AXIS] && axis_homed[Y_AXIS] && axis_homed[Z_AXIS])
+    if (all_axes_known())
+      lcd_goto_screen(QBL_HomingDone);
+  }
+
+  /**
+  * Step 1: Start Bed leveling by homing bed
+  */
+  void QBL_Start() {
+    is_advanced_bed_leveling = false;
+    defer_return_to_status = true;
+    temp_z_home_offset = home_offset[Z_AXIS];
+    home_offset[Z_AXIS] = 0;
+    // axis_homed[X_AXIS] = axis_homed[Y_AXIS] = axis_homed[Z_AXIS] = false;
+    axis_homed = 0;
+    lcd_goto_screen(QBL_Home);
+    enqueue_and_echo_commands_P(PSTR("G28"));
+  }
+   
+  void ABL_start() {
+    is_advanced_bed_leveling = true;
+    defer_return_to_status = true;
+    temp_z_home_offset = home_offset[Z_AXIS];
+    home_offset[Z_AXIS] = 0;
+    // axis_homed[X_AXIS] = axis_homed[Y_AXIS] = axis_homed[Z_AXIS] = false;
+    axis_homed = 0;
+    lcd_goto_screen(QBL_Home);
+    enqueue_and_echo_commands_P(PSTR("G28"));
+  }
+
+  // Fracktal: Bed calibration menu
+  void lcd_bed_menu() {
+    START_MENU();
+
+    //
+    // ^ Main
+    //
+    MENU_BACK(MSG_MAIN);
+    
+    MENU_ITEM(submenu, "Quick Leveling", QBL_Start);
+    
+    #if ENABLED(LCD_BED_LEVELING)
+      MENU_ITEM(submenu, "Advanced Leveling", ABL_start);
+    #endif
+    
+    END_MENU();
+  }
+  /* FRACKTAL WORKS: END */
+
   /**
    *
    * "Control" submenu
@@ -4175,14 +4556,17 @@ void lcd_quick_feedback(const bool clear_buttons) {
      * About Printer > Printer Info
      *
      */
+    /* FRACKTAL WORKS: START */
+    // Build versioning
     void lcd_info_printer_menu() {
       if (use_click()) { return lcd_goto_previous_menu(); }
       START_SCREEN();
-      STATIC_ITEM(MSG_MARLIN, true, true);                             // Marlin
-      STATIC_ITEM(SHORT_BUILD_VERSION, true);                          // x.x.x-Branch
-      STATIC_ITEM(STRING_DISTRIBUTION_DATE, true);                     // YYYY-MM-DD HH:MM
-      STATIC_ITEM(MACHINE_NAME, true);                                 // My3DPrinter
+      STATIC_ITEM(MSG_MARLIN " " MARLIN_BRANCH, true, true);           // Marlin
+      STATIC_ITEM("Fracktal Works", true);                             // x.x.x-Branch
       STATIC_ITEM(WEBSITE_URL, true);                                  // www.my3dprinter.com
+      STATIC_ITEM(MACHINE_NAME, true);                                 // My3DPrinter
+      STATIC_ITEM(DETAILED_BUILD_VERSION, true);                       // YYYY-MM-DD HH:MM
+      //STATIC_ITEM(DEFAULT_MACHINE_UUID, true);                         // Version 4 UUID
       STATIC_ITEM(MSG_INFO_EXTRUDERS ": " STRINGIFY(EXTRUDERS), true); // Extruders: 2
       #if ENABLED(AUTO_BED_LEVELING_3POINT)
         STATIC_ITEM(MSG_3POINT_LEVELING, true);                        // 3-Point Leveling
@@ -4197,6 +4581,7 @@ void lcd_quick_feedback(const bool clear_buttons) {
       #endif
       END_SCREEN();
     }
+    /* FRACKTAL WORKS: END */
 
     /**
      *
@@ -5187,12 +5572,27 @@ void lcd_update() {
 
   #endif // SDSUPPORT && SD_DETECT_PIN
 
-  #if ENABLED(POWER_LOSS_RECOVERY)
-    if (job_recovery_commands_count && job_recovery_phase == JOB_RECOVERY_IDLE) {
+  /* FRACKTAL WORKS: START */
+  // PRINT RESTORE
+
+  // #if ENABLED(POWER_LOSS_RECOVERY)
+  //   if (job_recovery_commands_count && job_recovery_phase == JOB_RECOVERY_IDLE) {
+  //     lcd_goto_screen(lcd_job_recovery_menu);
+  //     job_recovery_phase = JOB_RECOVERY_MAYBE; // Waiting for a response
+  //   }
+  // #endif
+
+	#if ENABLED(PRINT_RESTORE)
+    // do_print_restore();
+  
+    // if (job_recovery_commands_count && job_recovery_phase == JOB_RECOVERY_IDLE) {
+    if (print_restore_phase == FILE_MADE && card.recoveryFileExists()) {
       lcd_goto_screen(lcd_job_recovery_menu);
-      job_recovery_phase = JOB_RECOVERY_MAYBE; // Waiting for a response
+      // job_recovery_phase = JOB_RECOVERY_MAYBE; // Waiting for a response
+      print_restore_phase = LCD_MAYBE;
     }
   #endif
+  /* FRACKTAL WORKS: END */
 
   const millis_t ms = millis();
   if (ELAPSED(ms, next_lcd_update_ms)

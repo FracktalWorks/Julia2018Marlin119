@@ -87,14 +87,29 @@ public:
     #endif
   #endif
 
-  #if ENABLED(POWER_LOSS_RECOVERY)
-    void openJobRecoveryFile(const bool read);
-    void closeJobRecoveryFile();
-    bool jobRecoverFileExists();
-    int16_t saveJobRecoveryInfo();
-    int16_t loadJobRecoveryInfo();
-    void removeJobRecoveryFile();
+/* FRACKTAL WORKS: START */
+// PRINT RESTORE
+  // #if ENABLED(POWER_LOSS_RECOVERY)
+  //   void openJobRecoveryFile(const bool read);
+  //   void closeJobRecoveryFile();
+  //   bool jobRecoverFileExists();
+  //   int16_t saveJobRecoveryInfo();
+  //   int16_t loadJobRecoveryInfo();
+  //   void removeJobRecoveryFile();
+  // #endif
+  #if ENABLED(PRINT_RESTORE)
+    static const char PrintRestoreGcodeFilename[9];
+    SdFile printRestoreBin;
+    void openPrintRestoreBin(const bool read);
+    void closePrintRestoreBin();
+    bool printRestoreBinExists();
+    int16_t savePrintRestoreInfo();
+    int16_t loadPrintRestoreInfo();
+    void removePrintRestoreBin();
+    bool recoveryFileExists();
+    // FORCE_INLINE uint32_t getIndex() { return sdpos; }
   #endif
+/* FRACKTAL WORKS: END */
 
   FORCE_INLINE void pauseSDPrint() { sdprinting = false; }
   FORCE_INLINE bool isFileOpen() { return file.isOpen(); }

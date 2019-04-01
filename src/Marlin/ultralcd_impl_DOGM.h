@@ -281,6 +281,13 @@ void lcd_printPGM_utf(const char *str, uint8_t n=LCD_WIDTH) {
 #if ENABLED(SHOW_BOOTSCREEN)
 
   #if ENABLED(SHOW_CUSTOM_BOOTSCREEN)
+    
+    /* FRACKTAL WORKS: START */
+    // Custom bootscreen
+    #ifndef CUSTOM_BOOTSCREEN_TIMEOUT
+      #define CUSTOM_BOOTSCREEN_TIMEOUT 2500
+    #endif
+    /* FRACKTAL WORKS: END */
 
     void lcd_custom_bootscreen() {
       constexpr u8g_uint_t left = (LCD_PIXEL_WIDTH  - (CUSTOM_BOOTSCREEN_BMPWIDTH)) / 2,
@@ -321,23 +328,28 @@ void lcd_printPGM_utf(const char *str, uint8_t n=LCD_WIDTH) {
       #endif
     ;
 
-    const uint8_t width = u8g.getWidth(), height = u8g.getHeight(),
-                  offx = (width - (START_BMPWIDTH)) / 2;
+    
+    /* FRACKTAL WORKS: START */
+    // Hide first page
+    // const uint8_t width = u8g.getWidth(), height = u8g.getHeight(),
+    //               offx = (width - (START_BMPWIDTH)) / 2;
 
-    u8g.firstPage();
-    do {
-      u8g.drawBitmapP(offx, offy, (START_BMPWIDTH + 7) / 8, START_BMPHEIGHT, start_bmp);
-      lcd_setFont(FONT_MENU);
-      #ifndef STRING_SPLASH_LINE2
-        const uint8_t txt1X = width - (sizeof(STRING_SPLASH_LINE1) - 1) * (DOG_CHAR_WIDTH);
-        u8g.drawStr(txt1X, (height + DOG_CHAR_HEIGHT) / 2, STRING_SPLASH_LINE1);
-      #else
-        const uint8_t txt1X = (width - (sizeof(STRING_SPLASH_LINE1) - 1) * (DOG_CHAR_WIDTH)) / 2,
-                      txt2X = (width - (sizeof(STRING_SPLASH_LINE2) - 1) * (DOG_CHAR_WIDTH)) / 2;
-        u8g.drawStr(txt1X, height - (DOG_CHAR_HEIGHT) * 3 / 2, STRING_SPLASH_LINE1);
-        u8g.drawStr(txt2X, height - (DOG_CHAR_HEIGHT) * 1 / 2, STRING_SPLASH_LINE2);
-      #endif
-    } while (u8g.nextPage());
+    // u8g.firstPage();
+    // do {
+    //   u8g.drawBitmapP(offx, offy, (START_BMPWIDTH + 7) / 8, START_BMPHEIGHT, start_bmp);
+    //   lcd_setFont(FONT_MENU);
+    //   #ifndef STRING_SPLASH_LINE2
+    //     const uint8_t txt1X = width - (sizeof(STRING_SPLASH_LINE1) - 1) * (DOG_CHAR_WIDTH);
+    //     u8g.drawStr(txt1X, (height + DOG_CHAR_HEIGHT) / 2, STRING_SPLASH_LINE1);
+    //   #else
+    //     const uint8_t txt1X = (width - (sizeof(STRING_SPLASH_LINE1) - 1) * (DOG_CHAR_WIDTH)) / 2,
+    //                   txt2X = (width - (sizeof(STRING_SPLASH_LINE2) - 1) * (DOG_CHAR_WIDTH)) / 2;
+    //     u8g.drawStr(txt1X, height - (DOG_CHAR_HEIGHT) * 3 / 2, STRING_SPLASH_LINE1);
+    //     u8g.drawStr(txt2X, height - (DOG_CHAR_HEIGHT) * 1 / 2, STRING_SPLASH_LINE2);
+    //   #endif
+    // } while (u8g.nextPage());
+    /* FRACKTAL WORKS: END */
+    
     safe_delay(BOOTSCREEN_TIMEOUT);
   }
 

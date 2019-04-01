@@ -288,9 +288,15 @@
   #include "fwretract.h"
 #endif
 
-#if ENABLED(POWER_LOSS_RECOVERY)
-  #include "power_loss_recovery.h"
+/* FRACKTAL WORKS: START */
+// PRINT RESTORE
+// #if ENABLED(POWER_LOSS_RECOVERY)
+//   #include "power_loss_recovery.h"
+// #endif
+#if ENABLED(PRINT_RESTORE)
+  #include "print_restore.h"
 #endif
+/* FRACKTAL WORKS: END */
 
 #if ENABLED(FILAMENT_RUNOUT_SENSOR)
   #include "runout.h"
@@ -415,11 +421,29 @@ static long gcode_N, gcode_LastN, Stopped_gcode_LastN = 0;
  * the main loop. The process_next_command function parses the next
  * command and hands off execution to individual handler functions.
  */
+
+/* FRACKTAL WORKS: START */
+// PRINT RESTORE
+
 uint8_t commands_in_queue = 0, // Count of commands in the queue
         cmd_queue_index_r = 0, // Ring buffer read (out) position
         cmd_queue_index_w = 0; // Ring buffer write (in) position
+// char command_queue[BUFSIZE][MAX_CMD_SIZE];
 
+/*
+#if ENABLED(M100_FREE_MEMORY_WATCHER)
+  char command_queue[BUFSIZE][MAX_CMD_SIZE];  // Necessary so M100 Free Memory Dumper can show us the commands and any corruption
+#else                                         // This can be collapsed back to the way it was soon.
+  static char command_queue[BUFSIZE][MAX_CMD_SIZE];
+#endif
+*/
 char command_queue[BUFSIZE][MAX_CMD_SIZE];
+
+// #if ENABLED(BABYSTEPPING)
+//   float babystep_total = 0;
+// #endif
+
+/* FRACKTAL WORKS: END */
 
 /**
  * Next Injected Command pointer. NULL if no commands are being injected.
@@ -2435,8 +2459,20 @@ void clean_up_after_endstop_or_probe_move() {
 
     if (isnan(measured_z)) {
       LCD_MESSAGEPGM(MSG_ERR_PROBING_FAILED);
-      SERIAL_ERROR_START();
-      SERIAL_ERRORLNPGM(MSG_ERR_PROBING_FAILED);
+
+      /* FRACKTAL WORKS: START */
+      // AUTO BED LEVELING
+      // echo probing failed instead of error to prevent Octoprint screwup
+
+      // enqueue_and_echo_commands_now_P(PSTR("M118 PROBING_FAILED"));   // UI warning
+      SERIAL_ECHOLNPGM("PROBING_FAILED");
+      
+      // SERIAL_ERROR_START();
+      // SERIAL_ERRORLNPGM(MSG_ERR_PROBING_FAILED);
+      SERIAL_ECHOLNPGM(MSG_ERR_PROBING_FAILED);
+      
+      /* FRACKTAL WORKS: END */
+
     }
 
     #if ENABLED(DEBUG_LEVELING_FEATURE)
@@ -4354,6 +4390,11 @@ void home_all_axes() { gcode_G28(true); }
    *  v Y-axis  1-n
    *
    */
+  
+/* FRACKTAL WORKS: START */
+// BED LEVELING
+
+  /*
   inline void gcode_G29() {
 
     static int mbl_probe_index = -1;
@@ -4503,6 +4544,163 @@ void home_all_axes() { gcode_G28(true); }
 
     report_current_position();
   }
+  */
+  
+  inline void gcode_G29() {
+
+    static int mbl_probe_index = -1;
+    #if HAS_SOFTWARE_ENDSTOPS
+      static bool enable_soft_endstops;
+    #endif
+
+    MeshLevelingState state = (MeshLevelingState)parser.byteval('S', (int8_t)MeshReport);
+    if (!WITHIN(state, 0, 5)) {
+      SERIAL_PROTOCOLLNPGM("S out of range (0-5).");
+      return;
+    }
+
+    int8_t px, py;
+
+    switch (state) {
+      case MeshReport:
+        if (leveling_is_valid()) {
+          SERIAL_PROTOCOLLNPAIR("State: ", planner.leveling_active ? MSG_ON : MSG_OFF);
+          mbl.report_mesh();
+        }
+        else
+          SERIAL_PROTOCOLLNPGM("Mesh bed leveling has no data.");
+        break;
+
+      case MeshStart:
+        mbl.reset();
+        mbl_probe_index = 0;
+        if (!lcd_wait_for_move) {
+          //enqueue_and_echo_commands_P(PSTR("G28\nG29 S2"));
+          enqueue_and_echo_commands_P(PSTR("G29 S2"));
+          return;
+        }
+        state = MeshNext;
+
+      case MeshNext:
+        if (mbl_probe_index < 0) {
+          SERIAL_PROTOCOLLNPGM("Start mesh probing with \"G29 S1\" first.");
+          return;
+        }
+        // For each G29 S2...
+        if (mbl_probe_index == 0) {
+          #if HAS_SOFTWARE_ENDSTOPS
+            // For the initial G29 S2 save software endstop state
+            enable_soft_endstops = soft_endstops_enabled;
+          #endif
+          // Move close to the bed before the first point
+          do_blocking_move_to_z(0);
+        }
+        else {
+          // Save Z for the previous mesh position
+          mbl.set_zigzag_z(mbl_probe_index - 1, current_position[Z_AXIS]);
+          #if HAS_SOFTWARE_ENDSTOPS
+            soft_endstops_enabled = enable_soft_endstops;
+          #endif
+        }
+        // If there's another point to sample, move there with optional lift.
+        if (mbl_probe_index < GRID_MAX_POINTS) {
+          #if HAS_SOFTWARE_ENDSTOPS
+            // Disable software endstops to allow manual adjustment
+            // If G29 is not completed, they will not be re-enabled
+            soft_endstops_enabled = false;
+          #endif
+
+          mbl.zigzag(mbl_probe_index++, px, py);
+          _manual_goto_xy(mbl.index_to_xpos[px], mbl.index_to_ypos[py]);
+        }
+        else {
+          // One last "return to the bed" (as originally coded) at completion
+          current_position[Z_AXIS] = MANUAL_PROBE_HEIGHT;
+          buffer_line_to_current_position();
+          planner.synchronize();
+
+          // After recording the last point, activate home and activate
+          mbl_probe_index = -1;
+          SERIAL_PROTOCOLLNPGM("Mesh probing done.");
+          BUZZ(100, 659);
+          BUZZ(100, 698);
+          // mbl.has_mesh = true;
+
+          home_all_axes();
+          set_bed_leveling_enabled(true);
+
+          #if ENABLED(MESH_G28_REST_ORIGIN)
+            current_position[Z_AXIS] = 0;
+            set_destination_from_current();
+            buffer_line_to_destination(homing_feedrate(Z_AXIS));
+            planner.synchronize();
+          #endif
+
+          #if ENABLED(LCD_BED_LEVELING)
+            lcd_wait_for_move = false;
+          #endif
+        }
+        break;
+
+      case MeshSet:
+        if (parser.seenval('X')) {
+          px = parser.value_int() - 1;
+          if (!WITHIN(px, 0, GRID_MAX_POINTS_X - 1)) {
+            SERIAL_PROTOCOLLNPGM("X out of range (1-" STRINGIFY(GRID_MAX_POINTS_X) ").");
+            return;
+          }
+        }
+        else {
+          SERIAL_CHAR('X'); echo_not_entered();
+          return;
+        }
+
+        if (parser.seenval('Y')) {
+          py = parser.value_int() - 1;
+          if (!WITHIN(py, 0, GRID_MAX_POINTS_Y - 1)) {
+            SERIAL_PROTOCOLLNPGM("Y out of range (1-" STRINGIFY(GRID_MAX_POINTS_Y) ").");
+            return;
+          }
+        }
+        else {
+          SERIAL_CHAR('Y'); echo_not_entered();
+          return;
+        }
+
+        if (parser.seenval('Z'))
+          mbl.z_values[px][py] = parser.value_linear_units();
+        else {
+          SERIAL_CHAR('Z'); echo_not_entered();
+          return;
+        }
+        break;
+
+      case MeshSetZOffset:
+        if (parser.seenval('Z'))
+          mbl.z_offset = parser.value_linear_units();
+        else {
+          SERIAL_CHAR('Z'); echo_not_entered();
+          return;
+        }
+        break;
+
+      case MeshReset:
+        reset_bed_level();
+        break;
+
+    } // switch (state)
+
+    // if ((state == MeshStart || state == MeshNext) && mbl_probe_index >= 0) {
+    if (state == MeshNext) {
+      SERIAL_PROTOCOLPAIR("MBL G29 point ", min(mbl_probe_index, GRID_MAX_POINTS));
+      SERIAL_PROTOCOLLNPAIR(" of ", int(GRID_MAX_POINTS));
+    }
+
+    report_current_position();
+  }
+/* FRACKTAL WORKS: END */
+
+  
 
 #elif OLDSCHOOL_ABL
 
@@ -4632,7 +4830,18 @@ void home_all_axes() { gcode_G28(true); }
                 ;
 
     // Don't allow auto-leveling without homing first
-    if (axis_unhomed_error()) return;
+    
+    /* FRACKTAL WORKS: START */
+    // LOAD CELL ABL
+    if (axis_unhomed_error()) {
+      SERIAL_ECHOLNPGM("> Not homed. Enqueueing G28 followed by G29");
+      enqueue_and_echo_commands_P(PSTR("G28\nG29"));
+      return;
+    } else {
+      do_blocking_move_to_xy(0, 0, MMM_TO_MMS(HOMING_FEEDRATE_XY));
+      do_blocking_move_to_z(10, MMM_TO_MMS(HOMING_FEEDRATE_Z));
+    }
+    /* FRACKTAL WORKS: END */
 
     if (!no_action && planner.leveling_active && parser.boolval('O')) { // Auto-level only if needed
       #if ENABLED(DEBUG_LEVELING_FEATURE)
@@ -7111,9 +7320,18 @@ inline void gcode_M17() {
    * M23: Open a file
    */
   inline void gcode_M23() {
-    #if ENABLED(POWER_LOSS_RECOVERY)
-      card.removeJobRecoveryFile();
-    #endif
+    /* FRACKTAL WORKS: START */
+    // PRINT RESTORE
+    // #if ENABLED(POWER_LOSS_RECOVERY)
+    //   card.removeJobRecoveryFile();
+    // #endif
+
+    // Don't enable: BIN cannot be written after recovery
+    // #if ENABLED(PRINT_RESTORE)
+    //   card.removePrintRestoreBin();
+    // #endif
+
+    /* FRACKTAL WORKS: END */
     // Simplify3D includes the size, so zero out all spaces (#7227)
     for (char *fn = parser.string_arg; *fn; ++fn) if (*fn == ' ') *fn = '\0';
     card.openFile(parser.string_arg, true);
@@ -7123,6 +7341,13 @@ inline void gcode_M17() {
    * M24: Start or Resume SD Print
    */
   inline void gcode_M24() {
+    /* FRACKTAL WORKS: START */
+    // PRINT RESTORE
+    #if ENABLED(PRINT_RESTORE)
+      // card.removePrintRestoreBin();
+    #endif	
+    /* FRACKTAL WORKS: END */
+
     #if ENABLED(PARK_HEAD_ON_PAUSE)
       resume_print();
     #endif
@@ -9612,6 +9837,87 @@ inline void gcode_M226() {
 
 #endif // EXPERIMENTAL_I2CBUS
 
+/* FRACKTAL WORKS: START */
+// Pro Dual ABL Hotend Z-offset
+#if BV(JULIA_2018_PRO_DUAL_A)
+  inline void gcode_M272() {
+    const uint8_t old_tool_index = active_extruder;
+    const bool save = parser.seen('S');
+    float z1, z2, del_z;
+
+    SERIAL_ECHO_START();
+    SERIAL_ECHOLNPAIR("M272 save: ", save);
+
+    // Step 1: Home if unhomed
+    if (axis_unhomed_error()) home_all_axes();
+
+    // Step 2: Zero T1 hotend Z-offset
+    if (save) {
+      hotend_offset[Z_AXIS][1] = 0;
+    }
+
+    // Step 3: Tool change to T0
+    tool_change(0, MMM_TO_MMS(HOMING_FEEDRATE_Z), false);
+    SERIAL_ECHO_START();
+    SERIAL_ECHOLNPAIR("M272 step 3 Z: ", current_position[Z_AXIS]);
+
+    // Step 4: Go to staging XYZ
+    do_blocking_move_to_xy(X_BED_SIZE / 2, Y_BED_SIZE / 2, MMM_TO_MMS(HOMING_FEEDRATE_XY));
+    do_blocking_move_to_z(15, MMM_TO_MMS(HOMING_FEEDRATE_Z));
+    SERIAL_ECHO_START();
+    SERIAL_ECHOPAIR("M272 step 4 X: ", current_position[X_AXIS]);
+    SERIAL_ECHOPAIR(" Y: ", current_position[Y_AXIS]);
+    SERIAL_ECHOLNPAIR(" Z: ", current_position[Z_AXIS]);
+
+    // Step 5: Probe Z
+    gcode_G30();
+    planner.synchronize();
+    z1 = current_position[Z_AXIS];
+    SERIAL_ECHO_START();
+    SERIAL_ECHOLNPAIR("M272 step 5 Z1: ", z1);
+
+    // Step 6: Go to staging Z
+    do_blocking_move_to_z(15, MMM_TO_MMS(HOMING_FEEDRATE_Z));
+    SERIAL_ECHO_START();
+    SERIAL_ECHOLNPAIR("M272 step 6 Z: ", current_position[Z_AXIS]);
+
+    // Step 7: Tool change to T1
+    tool_change(1, MMM_TO_MMS(HOMING_FEEDRATE_Z), false);
+    SERIAL_ECHO_START();
+    SERIAL_ECHOLNPAIR("M272 step 7 Z: ", current_position[Z_AXIS]);
+
+    // Step 8: Probe Z
+    gcode_G30();
+    planner.synchronize();
+    z2 = current_position[Z_AXIS];
+    SERIAL_ECHO_START();
+    SERIAL_ECHOLNPAIR("M272 step 8 Z2: ", z2);
+
+    // Step 9: Go to staging Z
+    do_blocking_move_to_z(15, MMM_TO_MMS(HOMING_FEEDRATE_Z));
+    SERIAL_ECHO_START();
+    SERIAL_ECHOLNPAIR("M272 step 9 Z: ", current_position[Z_AXIS]);
+
+    // Step 10: Calculate offset
+    del_z = z2 + z1;
+    SERIAL_ECHO_START();
+    SERIAL_ECHOLNPAIR("M272 step 10 del Z: ", del_z);
+
+    // Step 11: Set offset
+    if (save) {
+      hotend_offset[Z_AXIS][1] = (-1.0 * del_z);
+      (void) settings.save();
+    }
+    SERIAL_ECHO_START();
+    SERIAL_ECHOLNPAIR("M272 step 11 T1 Z-offset: ", hotend_offset[Z_AXIS][1]);
+
+    // Step 12: T0 and Home
+    tool_change(0, MMM_TO_MMS(HOMING_FEEDRATE_Z), false);
+    home_all_axes();
+  }
+#endif
+/* FRACKTAL WORKS: END */
+
 #if HAS_SERVOS
 
   /**
@@ -9663,11 +9969,25 @@ inline void gcode_M226() {
         }
     #else
       if (parser.seenval('Z') || parser.seenval('S')) {
+        /* FRACKTAL WORKS: START */
+        // FW_BABYSTEP
         const float offs = constrain(parser.value_axis_units(Z_AXIS), -2, 2);
-        thermalManager.babystep_axis(Z_AXIS, offs * planner.axis_steps_per_mm[Z_AXIS]);
+        #if (BV_PIX() || BV_PRO()) && HAS_LEVELING
+          if (planner.leveling_active) {
+            if (mbl.z_offset + offs > FW_BABYSTEP_LIMIT)
+              mbl.z_offset = FW_BABYSTEP_LIMIT;
+            else if (mbl.z_offset + offs < -1 * FW_BABYSTEP_LIMIT)
+              mbl.z_offset = -1 * FW_BABYSTEP_LIMIT;
+            else
+              mbl.z_offset += offs;
+            (void)settings.save();
+          } else
+        #endif
+              thermalManager.babystep_axis(Z_AXIS, offs * planner.axis_steps_per_mm[Z_AXIS]);
         #if ENABLED(BABYSTEP_ZPROBE_OFFSET)
           if (!parser.seen('P') || parser.value_bool()) mod_zprobe_zoffset(offs);
         #endif
+        /* FRACKTAL WORKS: END */
       }
     #endif
   }
@@ -10251,9 +10571,23 @@ void quickstop_stepper() {
 
     // Error if leveling failed to enable or reenable
     if (to_enable && !planner.leveling_active) {
-      SERIAL_ERROR_START();
-      SERIAL_ERRORLNPGM(MSG_ERR_M420_FAILED);
+      /* FRACKTAL WORKS: START */
+      // BED LEVELING
+      // show error as echo to prevent catch by Octoprint
+
+      // SERIAL_ERROR_START();
+      // SERIAL_ERRORLNPGM(MSG_ERR_M420_FAILED);
+      SERIAL_ECHOLNPGM(MSG_ERR_M420_FAILED);
+      /* FRACKTAL WORKS: END */
     }
+
+    /* FRACKTAL WORKS: START */
+    // BABYSTEP SAVE
+    // char cmd[30];
+    // sprintf_P(cmd, PSTR("G29 S4 Z%s"), ftostr43sign(babystep_total));
+    // SERIAL_ECHOLNPAIR("Babystep z-offset", cmd);
+    // enqueue_and_echo_command_now(cmd);
+    /* FRACKTAL WORKS: END */
 
     SERIAL_ECHO_START();
     SERIAL_ECHOLNPAIR("Bed Leveling ", planner.leveling_active ? MSG_ON : MSG_OFF);
@@ -12001,6 +12335,9 @@ inline void invalid_extruder_error(const uint8_t e) {
  * Perform a tool-change, which may result in moving the
  * previous tool out of the way and the new tool into place.
  */
+
+/* FRACKTAL WORKS: START */
+// Tool change crash prevent at home positions
 void tool_change(const uint8_t tmp_extruder, const float fr_mm_s/*=0.0*/, bool no_move/*=false*/) {
   planner.synchronize();
 
@@ -12058,14 +12395,51 @@ void tool_change(const uint8_t tmp_extruder, const float fr_mm_s/*=0.0*/, bool n
 
           #if ENABLED(SWITCHING_NOZZLE)
             // Always raise by at least 1 to avoid workpiece
-            const float zdiff = hotend_offset[Z_AXIS][active_extruder] - hotend_offset[Z_AXIS][tmp_extruder];
-            current_position[Z_AXIS] += (zdiff > 0.0 ? zdiff : 0.0) + 1;
+
+            /* FRACKTAL WORKS: START */
+            // Tool change prevent crash at HOME
+            const float toolchange_z_raise = 2.0;
+
+            const float zdiff = hotend_offset[Z_AXIS][tmp_extruder] - hotend_offset[Z_AXIS][active_extruder];
+
+            const float tmp_z_move = current_position[Z_AXIS] + MAX(-zdiff, zdiff) + toolchange_z_raise;
+            const bool stop_z_crash = (tmp_z_move > Z_MAX_POS);
+
+            #if ENABLED(DEBUG_LEVELING_FEATURE)
+              if (DEBUGGING(LEVELING)) {
+                SERIAL_ECHOPAIR("FW: tmp_z_move=", tmp_z_move);
+                SERIAL_ECHOLNPAIR(", stop_z_crash=", stop_z_crash);
+              }
+            #endif
+
+            current_position[Z_AXIS] += MAX(-zdiff, 0.0) + toolchange_z_raise;
+            NOMORE(current_position[Z_AXIS], soft_endstop_max[Z_AXIS]);
+            /* FRACKTAL WORKS: END */
+
             planner.buffer_line_kinematic(current_position, planner.max_feedrate_mm_s[Z_AXIS], active_extruder);
             move_nozzle_servo(tmp_extruder);
           #endif
 
           const float xdiff = hotend_offset[X_AXIS][tmp_extruder] - hotend_offset[X_AXIS][active_extruder],
                       ydiff = hotend_offset[Y_AXIS][tmp_extruder] - hotend_offset[Y_AXIS][active_extruder];
+
+          /* FRACKTAL WORKS: START */
+          // Tool change prevent crash at HOME
+          const float tmp_x_move = current_position[X_AXIS] - xdiff;
+          const bool stop_x_crash = (tmp_x_move < X_HOME_POS);
+
+          #if ENABLED(DEBUG_LEVELING_FEATURE)
+            if (DEBUGGING(LEVELING)) {
+              SERIAL_ECHOPAIR("FW: tmp_x_move=", tmp_x_move);
+              SERIAL_ECHOLNPAIR(", stop_x_crash=", stop_x_crash);
+            }
+          #endif
+
+          if (stop_x_crash) {
+            SERIAL_ECHOLNPAIR("FW: Changing destination[X_AXIS] to stop crash, destination[X_AXIS]=", destination[X_AXIS] + xdiff);
+            destination[X_AXIS] += xdiff;
+          }
+          /* FRACKTAL WORKS: END */
 
           #if ENABLED(DEBUG_LEVELING_FEATURE)
             if (DEBUGGING(LEVELING)) {
@@ -12086,7 +12460,17 @@ void tool_change(const uint8_t tmp_extruder, const float fr_mm_s/*=0.0*/, bool n
 
         #if ENABLED(SWITCHING_NOZZLE)
           // The newly-selected extruder Z is actually at...
-          current_position[Z_AXIS] -= zdiff;
+
+          /* FRACKTAL WORKS: START */
+          // Tool change prevent crash at HOME
+          if (stop_z_crash) {
+            SERIAL_ECHOPAIR("FW: Stop Z crash, expected current_position[Z_AXIS]=", current_position[Z_AXIS] + zdiff);
+            SERIAL_ECHOLNPAIR(", corrected current_position[Z_AXIS]=", current_position[Z_AXIS]);
+          } else {
+            current_position[Z_AXIS] += zdiff;
+          }
+          /* FRACKTAL WORKS: END */
+
         #endif
 
         // Tell the planner the new "current position"
@@ -12172,6 +12556,7 @@ void tool_change(const uint8_t tmp_extruder, const float fr_mm_s/*=0.0*/, bool n
 
   #endif // !MIXING_EXTRUDER || MIXING_VIRTUAL_TOOLS <= 1
 }
+/* FRACKTAL WORKS: END */
 
 /**
  * T0-T3: Switch tool, usually switching extruders
@@ -12508,6 +12893,13 @@ void process_parsed_command() {
         case 260: gcode_M260(); break;                            // M260: Send Data to i2c slave
         case 261: gcode_M261(); break;                            // M261: Request Data from i2c slave
       #endif
+
+      /* FRACKTAL WORKS: START */
+      // Pro Dual ABL Hotend Z-offset
+      #if BV(JULIA_2018_PRO_DUAL_A)
+        case 272: gcode_M272(); break;                   // Pro Dual ABL Hotend Z-offset calibration
+      #endif
+      /* FRACKTAL WORKS: END */
 
       #if HAS_SERVOS
         case 280: gcode_M280(); break;                            // M280: Set Servo Position
@@ -14500,10 +14892,17 @@ void setup() {
   if (mcu & 32) SERIAL_ECHOLNPGM(MSG_SOFTWARE_RESET);
   MCUSR = 0;
 
+/* FRACKTAL WORKS: START */
+// Build versioning
   SERIAL_ECHOPGM(MSG_MARLIN);
   SERIAL_CHAR(' ');
-  SERIAL_ECHOLNPGM(SHORT_BUILD_VERSION);
+  SERIAL_ECHOLNPGM(MARLIN_BRANCH);
+  SERIAL_ECHO_START();
+  SERIAL_ECHOLNPGM(STRING_CONFIG_H_AUTHOR " " MACHINE_NAME);
+  SERIAL_ECHO_START();
+  SERIAL_ECHOLNPGM("Build: " DETAILED_BUILD_VERSION);
   SERIAL_EOL();
+/* FRACKTAL WORKS: END */
 
   #if defined(STRING_DISTRIBUTION_DATE) && defined(STRING_CONFIG_H_AUTHOR)
     SERIAL_ECHO_START();
@@ -14683,9 +15082,15 @@ void setup() {
     #endif
   #endif
 
-  #if ENABLED(POWER_LOSS_RECOVERY)
-    check_print_job_recovery();
-  #endif
+  /* FRACKTAL WORKS: START */
+  // PRINT RESTORE
+  // #if ENABLED(POWER_LOSS_RECOVERY)
+  //   check_print_job_recovery();
+  // #endif
+  #if ENABLED(PRINT_RESTORE)
+    do_print_restore();
+  #endif	
+  /* FRACKTAL WORKS: END */
 
   #if ENABLED(USE_WATCHDOG)
     watchdog_init();
@@ -14768,9 +15173,16 @@ void loop() {
       }
       else {
         process_next_command();
-        #if ENABLED(POWER_LOSS_RECOVERY)
-          if (card.cardOK && card.sdprinting) save_job_recovery_info();
+        /* FRACKTAL WORKS: START */
+        // PRINT RESTORE
+        // #if ENABLED(POWER_LOSS_RECOVERY)
+        //   if (card.cardOK && card.sdprinting) save_job_recovery_info();
+        // #endif
+        #if ENABLED(PRINT_RESTORE)
+          if (card.cardOK && card.sdprinting) 
+            save_print_restore_info();
         #endif
+        /* FRACKTAL WORKS: END */
       }
 
     #else
