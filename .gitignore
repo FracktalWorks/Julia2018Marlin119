@@ -83,7 +83,7 @@ backup/
 # build system files
 src/Marlin/_Variant.h
 src/Marlin/_Version.h
-src/Marlin/Marlin.ino
+# src/Marlin/Marlin.ino
 
 buildroot/
 
