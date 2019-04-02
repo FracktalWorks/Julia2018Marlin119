@@ -2,9 +2,6 @@
 intermediate/*
 staging/*
 output/*
-bkp
-src/common/_Version.h
-src/common/_FracktalWorks.h
 
 # Logs
 logs
@@ -80,4 +77,22 @@ typings/
 # Serverless directories
 .serverless
 
+bkp/
+backup/
+
+# build system files
+src/Marlin/_Variant.h
+src/Marlin/_Version.h
+src/Marlin/Marlin.ino
+
+buildroot/
+
 .vscode/ipch
+.vscode/c_cpp_properties.json
+.vscode/.BROWSE*
+
+.pioenvs/
+.piolibdeps/
+
+V_OPT
+HEX_NAME_FILE
