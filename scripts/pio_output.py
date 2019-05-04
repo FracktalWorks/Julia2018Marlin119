@@ -23,7 +23,7 @@ def post(env, target, source):
   HEX_NAME = None
   try:
     if not os.path.exists("HEX_NAME_FILE"):
-      print("V_OPT file not found")
+      print("HEX_NAME_FILE file not found")
       exit(1)
     with open("HEX_NAME_FILE", "r") as f:
       HEX_NAME = f.readline().replace("\n", "")
@@ -41,5 +41,8 @@ def post(env, target, source):
     HEX_NAME = HEX_NAME + "_mega_" + datetime.datetime.now().strftime("%d%m%Y_%H%M%S") + ".hex"
     shutil.copyfile(str(target[0]), os.path.join("output", HEX_NAME))
     print("Copied " + HEX_NAME)
+
+  if os.path.exists("HEX_NAME_FILE"):
+    os.remove("HEX_NAME_FILE")
 
 env.AddPostAction("$BUILD_DIR/firmware.hex", post)
