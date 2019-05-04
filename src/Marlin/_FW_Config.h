@@ -97,6 +97,12 @@
 #define Z_MIN_POS 0
 
 /**  Stepper  **/
+#define X_DRIVER_TYPE     DRV8825
+#define Y_DRIVER_TYPE     DRV8825
+#define Z_DRIVER_TYPE     DRV8825
+#define E0_DRIVER_TYPE    DRV8825
+#define E1_DRIVER_TYPE    DRV8825
+
 #if BV_PRO() || BV_PRO_ABL()
   #define INVERT_X_DIR    true
   #define INVERT_Y_DIR    true
