@@ -42,32 +42,34 @@ typedef struct {
   int16_t target_temperature[HOTENDS],
           fanSpeeds[FAN_COUNT];
 
-  #if HAS_HEATER_BED
-    int16_t target_temperature_bed;
-  #endif
+  // #if HAS_HEATED_BED
+  int16_t target_temperature_bed;
+  // #endif
 
   #if HAS_LEVELING
     bool leveling;
     float fade;
   #endif
 
-	// #if ENABLED(BABYSTEPPING)
-	// 	float babystep = 0;
-	// #endif
+  // #if ENABLED(BABYSTEPPING)
+  // 	float babystep = 0;
+  // #endif
 
   // Command queue
   uint8_t cmd_queue_index_r, commands_in_queue;
   char command_queue[BUFSIZE][MAX_CMD_SIZE];
 
-  // SD File position
+  // Print job name
+  char sd_filename[MAXPATHNAMELENGTH];
+
+  // Print file position
   uint32_t sdpos;
 
   // Job elapsed time
   millis_t print_job_elapsed;
 
   uint8_t valid_foot;
-	
-	char sd_filename[MAXPATHNAMELENGTH];
+
 } print_restore_info_t;
 
 extern print_restore_info_t print_restore_info;
@@ -77,7 +79,7 @@ enum PrintRestorePhase : unsigned char {
   BIN_FOUND,
   FILE_MADE,
   LCD_MAYBE,
-	START
+  START
 };
 extern PrintRestorePhase print_restore_phase;
 
