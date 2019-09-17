@@ -148,13 +148,17 @@
 /**  Movement  **/
 #define S_CURVE_ACCELERATION
 #define DEFAULT_AXIS_STEPS_PER_UNIT   { 160,  160, 1007.874, 280 }
-#define DEFAULT_MAX_FEEDRATE          { 200, 200, 20, 45 }
 #if BV_PRO() || BV_PRO_ABL()
-  #define DEFAULT_ACCELERATION          800    // X, Y, Z and E acceleration for printing moves
-  #define DEFAULT_MAX_ACCELERATION      { 800, 800, 50, 10000 }
+  #define DEFAULT_MAX_FEEDRATE          { 300, 300, 20, 45 }
 #else
-  #define DEFAULT_ACCELERATION          1000    // X, Y, Z and E acceleration for printing moves
+  #define DEFAULT_MAX_FEEDRATE          { 200, 200, 20, 45 }
+#endif
+#if BV_PRO() || BV_PRO_ABL()
+  #define DEFAULT_MAX_ACCELERATION      { 400, 400, 50, 10000 }
+  #define DEFAULT_ACCELERATION          400    // X, Y, Z and E acceleration for printing moves
+#else
   #define DEFAULT_MAX_ACCELERATION      { 1000, 1000, 50, 10000 }
+  #define DEFAULT_ACCELERATION          1000    // X, Y, Z and E acceleration for printing moves
 #endif
 #define DEFAULT_RETRACT_ACCELERATION  2000    // E acceleration for retracts
 #define DEFAULT_TRAVEL_ACCELERATION   1000    // X, Y, Z acceleration for travel (non printing) moves
