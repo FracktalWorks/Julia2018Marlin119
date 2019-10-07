@@ -83,7 +83,13 @@
 
 #define JUNCTION_DEVIATION
 #if ENABLED(JUNCTION_DEVIATION)
-  #define JUNCTION_DEVIATION_MM 0.05  // (mm) Distance from real junction edge
+  #if BV_NPI() || BV_PIX()
+    #define JUNCTION_DEVIATION_MM 0.025  // (mm) Distance from real junction edge
+  #elif BV_PRO_SINGLE()
+    #define JUNCTION_DEVIATION_MM 0.025
+  #elif BV_PRO_DUAL()
+    #define JUNCTION_DEVIATION_MM 0.015
+  #endif
 #endif
 
 //===========================================================================

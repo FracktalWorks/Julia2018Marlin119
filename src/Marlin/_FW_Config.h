@@ -67,11 +67,11 @@
   #define X_BED_SIZE  370
   #define Y_BED_SIZE  395
   #define Z_MAX_POS   400
-#elif BV(JULIA_2018_PRO_SINGLE_A)
+#elif BV(JULIA_2018_PRO_SINGLE_A) || BV(JULIA_2018_PRO_SINGLE_A24)
   #define X_BED_SIZE  400
   #define Y_BED_SIZE  400
   #define Z_MAX_POS   400
-#elif BV(JULIA_2018_PRO_DUAL_A)
+#elif BV(JULIA_2018_PRO_DUAL_A) || BV(JULIA_2018_PRO_DUAL_A24)
   #define X_BED_SIZE  370
   #define Y_BED_SIZE  395
   #define Z_MAX_POS   400
@@ -103,7 +103,7 @@
 #define E0_DRIVER_TYPE    DRV8825
 #define E1_DRIVER_TYPE    DRV8825
 
-#if BV_PRO() || BV_PRO_ABL()
+#if BV_PRO() || BV_PRO_ABL() || BV_PRO_ABL24()
   #define INVERT_X_DIR    true
   #define INVERT_Y_DIR    true
   #define INVERT_Z_DIR    true
@@ -147,15 +147,22 @@
 
 /**  Movement  **/
 #define S_CURVE_ACCELERATION
-#define DEFAULT_AXIS_STEPS_PER_UNIT   { 160,  160, 1007.874, 280 }
-#if BV_PRO() || BV_PRO_ABL()
+#if BV_PRO_ABL24()
+  #define DEFAULT_AXIS_STEPS_PER_UNIT   { 200,  200, 1007.874, 280 }
+#else
+  #define DEFAULT_AXIS_STEPS_PER_UNIT   { 160,  160, 1007.874, 280 }
+#endif
+#if BV_PRO() || BV_PRO_ABL() || BV_PRO_ABL24()
   #define DEFAULT_MAX_FEEDRATE          { 300, 300, 20, 45 }
 #else
   #define DEFAULT_MAX_FEEDRATE          { 200, 200, 20, 45 }
 #endif
 #if BV_PRO() || BV_PRO_ABL()
-  #define DEFAULT_MAX_ACCELERATION      { 400, 400, 50, 10000 }
+  #define DEFAULT_MAX_ACCELERATION      { 500, 500, 50, 10000 }
   #define DEFAULT_ACCELERATION          400    // X, Y, Z and E acceleration for printing moves
+#elif BV_PRO_ABL24()
+  #define DEFAULT_MAX_ACCELERATION      { 1000, 1000, 50, 10000 }
+  #define DEFAULT_ACCELERATION          1000    // X, Y, Z and E acceleration for printing moves
 #else
   #define DEFAULT_MAX_ACCELERATION      { 1000, 1000, 50, 10000 }
   #define DEFAULT_ACCELERATION          1000    // X, Y, Z and E acceleration for printing moves
@@ -207,9 +214,9 @@
 #define TEMP_BED_RESIDENCY_TIME 2
 
 /**  PID temperature settings  **/
-#define  DEFAULT_Kp   42.96
-#define  DEFAULT_Ki   5.14
-#define  DEFAULT_Kd   89.73
+#define  DEFAULT_Kp   67.13 // 42.96
+#define  DEFAULT_Ki   10.75 // 5.14
+#define  DEFAULT_Kd   104.85 // 89.73
 
 /**  Thermal Runaway  **/
 #if NBV(JULIA_2018_GLCD)
@@ -218,7 +225,7 @@
 
 
 /**  Bed leveling  **/
-#if BV_PRO_ABL()   // auto bed leveling
+#if BV_PRO_ABL() || BV_PRO_ABL24()   // auto bed leveling
   #define Z_MIN_PROBE_ENDSTOP
   #define FIX_MOUNTED_PROBE
   #define Z_PROBE_OFFSET_FROM_EXTRUDER 0.2   // Z offset: -below +above  [the nozzle]
