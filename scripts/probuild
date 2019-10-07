@@ -43,7 +43,7 @@ fi
 # make output dir
 mkdir -p "${OUTPUT}"
 
-for (( i=0; i<=7; i++ )); do
+for (( i=0; i<=9; i++ )); do
 	SHORT_VARIANT=${SHORT_VARIANTS[${i}]}
 	MACHINE_NAME=${MACHINE_NAMES[${i}]}
 	VARIANT=${VARIANTS[${i}]}

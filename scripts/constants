@@ -9,6 +9,8 @@ declare -a VARIANTS=(
   "JULIA_2018_PRO_DUAL"
   "JULIA_2018_PRO_SINGLE_A"
   "JULIA_2018_PRO_DUAL_A"
+  "JULIA_2018_PRO_SINGLE_A24"
+  "JULIA_2018_PRO_DUAL_A24"
 )
 
 declare -a SHORT_VARIANTS=(
@@ -20,6 +22,8 @@ declare -a SHORT_VARIANTS=(
   "J18PD"
   "J18PT"
   "J18PE"
+  "J18PU"
+  "J18PF"
 )
 
 declare -a MACHINE_NAMES=(
@@ -31,6 +35,8 @@ declare -a MACHINE_NAMES=(
   "Julia Pro Dual"
   "Julia Pro Single ABL"
   "Julia Pro Dual ABL"
+  "Julia Pro Single ABL 24V"
+  "Julia Pro Dual ABL 24V"
 )
 
 declare -a UUIDS=(
@@ -42,4 +48,6 @@ declare -a UUIDS=(
   "56a1cc8d-2bc1-4592-b8f5-6c1c2aecaf0c"
   "2f9e7e22-589b-4ec9-bff5-12f7f6d3998c"
   "a52db5c4-7553-468b-ba80-273f8da9eb75"
+  "10d120b9-e54e-4f12-bcfa-7a350595a4f2"
+  "0108a599-3b95-4186-a636-069eb59879c0"
 )

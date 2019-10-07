@@ -19,6 +19,8 @@
 #define JULIA_2018_PRO_DUAL               5
 #define JULIA_2018_PRO_SINGLE_A           6
 #define JULIA_2018_PRO_DUAL_A             7
+#define JULIA_2018_PRO_SINGLE_A24         8
+#define JULIA_2018_PRO_DUAL_A24           9
 
 #include "_Variant.h"
 
@@ -31,7 +33,8 @@
 #define BV_PRO()            ( BV(JULIA_2018_PRO_SINGLE) || BV(JULIA_2018_PRO_DUAL) )
 // #define BV_PI()          ( BV_PIX() || BV_PRO() )
 #define BV_PRO_ABL()        ( BV(JULIA_2018_PRO_SINGLE_A) || BV(JULIA_2018_PRO_DUAL_A) )
-#define BV_PRO_SINGLE()     ( BV(JULIA_2018_PRO_SINGLE) || BV(JULIA_2018_PRO_SINGLE_A) )
-#define BV_PRO_DUAL()       ( BV(JULIA_2018_PRO_DUAL) || BV(JULIA_2018_PRO_DUAL_A) )
+#define BV_PRO_ABL24()      ( BV(JULIA_2018_PRO_SINGLE_A24) || BV(JULIA_2018_PRO_DUAL_A24) )
+#define BV_PRO_SINGLE()     ( BV(JULIA_2018_PRO_SINGLE) || BV(JULIA_2018_PRO_SINGLE_A) || BV(JULIA_2018_PRO_SINGLE_A24) )
+#define BV_PRO_DUAL()       ( BV(JULIA_2018_PRO_DUAL) || BV(JULIA_2018_PRO_DUAL_A) || BV(JULIA_2018_PRO_DUAL_A24) )
 
 #endif // _FRACKTAL_WORKS_H

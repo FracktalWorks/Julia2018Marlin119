@@ -33,7 +33,7 @@ except:
   print("Error")
   exit(1)
 
-if not 0 <= V_OPT <= 7:
+if not 0 <= V_OPT <= 9:
   print("V_OPT invalid")
   exit(1)
 
