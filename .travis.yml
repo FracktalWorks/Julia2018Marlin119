@@ -12,7 +12,8 @@ git:
   submodules: false
 
 branches: 
-  except: gh-pages
+  only:
+    - master
 
 before_install: 
 # - openssl enc -nosalt -aes-256-cbc -d -in ${TRAVIS_BUILD_DIR}/scripts/.dropbox_uploader.enc -out ~/.dropbox_uploader -base64 -K ${ENC_KEY} -iv ${ENC_IV}
