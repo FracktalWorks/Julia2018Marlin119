@@ -146,7 +146,7 @@
 #define HOMING_FEEDRATE_Z   (20*60)
 
 /**  Movement  **/
-#define S_CURVE_ACCELERATION
+//#define S_CURVE_ACCELERATION
 #if BV_PRO_ABL24()
   //#define DEFAULT_AXIS_STEPS_PER_UNIT   { 200,  200, 1007.874, 280 }  for 1/32 microstep ratio
   #define DEFAULT_AXIS_STEPS_PER_UNIT   { 100,  100, 503.937, 140 }
