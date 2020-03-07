@@ -251,7 +251,7 @@
   #if BV(JULIA_2018_RPI_E) || BV_PRO()
     #define GRID_MAX_POINTS_X 3
   #else
-    #define GRID_MAX_POINTS_X 2
+    #define GRID_MAX_POINTS_X 3
   #endif
   #if BV_NPI()
     #define LCD_BED_LEVELING
