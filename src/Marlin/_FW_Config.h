@@ -159,13 +159,13 @@
   #define DEFAULT_MAX_FEEDRATE          { 200, 200, 20, 45 }
 #endif
 #if BV_PRO() || BV_PRO_ABL()
-  #define DEFAULT_MAX_ACCELERATION      { 500, 500, 50, 10000 }
+  #define DEFAULT_MAX_ACCELERATION      { 600, 600, 50, 10000 }
   #define DEFAULT_ACCELERATION          400    // X, Y, Z and E acceleration for printing moves
 #elif BV_PRO_ABL24()
-  #define DEFAULT_MAX_ACCELERATION      { 800, 800, 50, 10000 }
+  #define DEFAULT_MAX_ACCELERATION      { 1500, 1500, 50, 10000 }
   #define DEFAULT_ACCELERATION          1000    // X, Y, Z and E acceleration for printing moves
 #else
-  #define DEFAULT_MAX_ACCELERATION      { 800, 800, 50, 10000 }
+  #define DEFAULT_MAX_ACCELERATION      { 1500, 1500, 50, 10000 }
   #define DEFAULT_ACCELERATION          1000    // X, Y, Z and E acceleration for printing moves
 #endif
 #define DEFAULT_RETRACT_ACCELERATION  2000    // E acceleration for retracts
