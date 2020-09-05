@@ -74,7 +74,7 @@
 #elif BV(JULIA_2018_PRO_DUAL_A) || BV(JULIA_2018_PRO_DUAL_A24)
   #define X_BED_SIZE  370
   #define Y_BED_SIZE  395
-  #define Z_MAX_POS   400
+  #define Z_MAX_POS   420
 #endif
 
 /** Min Pos **/
@@ -104,8 +104,8 @@
 #define E1_DRIVER_TYPE    DRV8825
 
 #if BV_PRO() || BV_PRO_ABL() || BV_PRO_ABL24()
-  #define INVERT_X_DIR    true
-  #define INVERT_Y_DIR    true
+  #define INVERT_X_DIR    false
+  #define INVERT_Y_DIR    false
   #define INVERT_Z_DIR    true
 
   #define INVERT_E0_DIR   false
@@ -177,7 +177,7 @@
 
 /** Extruder Count **/
 #if BV_PRO_DUAL()
-  #define EXTRUDERS 2
+  #define EXTRUDERS 4//2
 #else
   #define EXTRUDERS 1
 #endif
@@ -197,9 +197,11 @@
 #endif
 
 /**  Thermistor  **/
-#define TEMP_SENSOR_0       3
+#define TEMP_SENSOR_0       20
 #if BV_PRO_DUAL()
-  #define TEMP_SENSOR_1     3
+  #define TEMP_SENSOR_1     20
+  #define TEMP_SENSOR_2     3
+  #define TEMP_SENSOR_3     3
 #else
   #define TEMP_SENSOR_1     0
 #endif
