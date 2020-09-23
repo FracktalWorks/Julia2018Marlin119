@@ -53,6 +53,7 @@ Commit - 7b594ee
 - `watcher.js` - Build automation Node.js script
 
 ## Below are changes done on RnD Julia Pro Dual
+
 # _Version.h
 
     Upon Julia Pro build, Changes made are below
@@ -62,26 +63,34 @@ Commit - 7b594ee
     DETAILED_BUILD_VERSION "VD20_200922_1724"
     SHORT_BUILD_VERSION "VD20"
 
-# _FW_Config.h
+# src/Marlin/_FW_Config.h
 
-     #define X_BED_SIZE  395
-     #define Y_BED_SIZE  400
+      #define X_BED_SIZE  395
+      #define Y_BED_SIZE  400
       #define Z_MAX_POS   420
       #define INVERT_X_DIR    false
       #define INVERT_Y_DIR    false
-      #define INVERT_Z_DIR    true
-      #define INVERT_E0_DIR   false
-      #define INVERT_E1_DIR   true
-      #define X_HOME_DIR  -1
-      #define Y_HOME_DIR   1
-      #define Z_HOME_DIR   1
-  
-      #define TEMP_SENSOR_0     20
+      #define EXTRUDERS 4//2
+      #define TEMP_SENSOR_0       20
       #define TEMP_SENSOR_1     20
       #define TEMP_SENSOR_2     3
       #define TEMP_SENSOR_3     3
-      #define TEMP_SENSOR_BED   3
+      
+ # src/Marlin/Configuration.h
+    //#define TEMP_SENSOR_2 0
+    //#define TEMP_SENSOR_3 0
+    //#define TEMP_SENSOR_4 0
+    //#define TEMP_SENSOR_CHAMBER 0
+    #define HEATER_0_MAXTEMP 350
+    #define HEATER_1_MAXTEMP 350
+    #define HEATER_2_MAXTEMP 120  //chamber heater
+    #define HEATER_3_MAXTEMP 60  //Filament heater
+    //#define HEATER_4_MAXTEMP 275
   
+# src/Marlin/pins_MKS_GEN_13.h
+    //#if HOTENDS > 2 || E_STEPPERS > 2
+    //#error "MKS GEN 1.3/1.4 supports up to 2 hotends / E-steppers. Comment out this line to continue."
+    //#endif
 # Configuration_adv.h  
     #define EXTRUDER_RUNOUT_PREVENT
     #if ENABLED(EXTRUDER_RUNOUT_PREVENT)
@@ -90,7 +99,40 @@ Commit - 7b594ee
      #define EXTRUDER_RUNOUT_SPEED 1500  // mm/m
      #define EXTRUDER_RUNOUT_EXTRUDE 5   // mm
     #endif
-# pins_RAMPS.h
+# src/Marlin/pins_RAMPS.h
     #ifndef Z_MIN_PROBE_PIN
-     #define Z_MIN_PROBE_PIN  40 //57  // 32
+    #define Z_MIN_PROBE_PIN  40 //57  // 32
     #endif
+    
+    #define E2_STEP_PIN        36
+    #define E2_DIR_PIN         34
+    #define E2_ENABLE_PIN      30
+    #ifndef E2_CS_PIN
+    #define E2_CS_PIN        44
+    #endif
+
+    #define E3_STEP_PIN        36
+    #define E3_DIR_PIN         34
+    #define E3_ENABLE_PIN      30
+    #ifndef E3_CS_PIN
+    #define E3_CS_PIN        44
+    #endif
+    
+    
+    #define TEMP_0_PIN         12   // Analog Input
+    #define TEMP_1_PIN         11   // Analog Input
+    #define TEMP_2_PIN         13   // Analog Input
+    #define TEMP_3_PIN         15   // Analog Input
+    
+    #define HEATER_1_PIN   MOSFET_D_PIN
+    #define HEATER_2_PIN   44
+    #define HEATER_3_PIN   42
+    #endif
+    
+# src/Marlin/SanityCheck.h
+    //#elif EXTRUDERS != 2
+    //#error "SWITCHING_NOZZLE requires exactly 2 EXTRUDERS."
+    //#elif TEMP_SENSOR_2 != 0
+    //#error "TEMP_SENSOR_2 shouldn't be set with only 2 HOTENDS."
+     //#elif TEMP_SENSOR_3 != 0
+     //#error "TEMP_SENSOR_3 shouldn't be set with only 2 HOTENDS."
