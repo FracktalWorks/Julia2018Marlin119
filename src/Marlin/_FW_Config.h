@@ -72,8 +72,8 @@
   #define Y_BED_SIZE  400
   #define Z_MAX_POS   400
 #elif BV(JULIA_2018_PRO_DUAL_A) || BV(JULIA_2018_PRO_DUAL_A24)
-  #define X_BED_SIZE  370
-  #define Y_BED_SIZE  395
+  #define X_BED_SIZE  395
+  #define Y_BED_SIZE  400
   #define Z_MAX_POS   420
 #endif
 

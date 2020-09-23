@@ -349,7 +349,7 @@
 #define HEATER_1_MAXTEMP 350
 #define HEATER_2_MAXTEMP 120  //chamber heater
 #define HEATER_3_MAXTEMP 60  //Filament heater
-#define HEATER_4_MAXTEMP 275
+//#define HEATER_4_MAXTEMP 275
 #define BED_MAXTEMP 150
 
 //===========================================================================
