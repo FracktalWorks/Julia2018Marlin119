@@ -19,7 +19,7 @@ Commit - 7b594ee
 | Julia Pro Single         | JULIA_2018_PRO_SINGLE      | J18PS      | 4          |
 | Julia Pro Dual           | JULIA_2018_PRO_DUAL        | J18PD      | 5          |
 | Julia Pro Single ABL     | JULIA_2018_PRO_SINGLE_A    | J18PT      | 6          |
-| Julia Pro Dual ABL This is being used for building volterra.       | JULIA_2018_PRO_DUAL_A      | J18PE      | 7          | 
+| Julia Pro Dual ABL (_This is being used for building volterra_)       | JULIA_2018_PRO_DUAL_A      | J18PE      | 7          | 
 
 ## Migration Process
 
@@ -83,7 +83,7 @@ Commit - 7b594ee
     //#define TEMP_SENSOR_CHAMBER 0
     #define HEATER_0_MAXTEMP 350
     #define HEATER_1_MAXTEMP 350
-    #define HEATER_2_MAXTEMP 120  //chamber heater
+    #define HEATER_2_MAXTEMP 120  //chamber heater or build volume heater
     #define HEATER_3_MAXTEMP 60  //Filament heater
     //#define HEATER_4_MAXTEMP 275
   
