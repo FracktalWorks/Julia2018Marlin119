@@ -54,6 +54,8 @@ Commit - 7b594ee
 
 ## Below are changes done on RnD Julia Pro Dual
 
+HEX link- https://github.com/FracktalWorks/Julia2018Marlin119/blob/1.1.9/src/Marlin/Marlin.ino.mega.hex
+
 # _Version.h
 
     Upon Julia Pro build, Changes made are below
