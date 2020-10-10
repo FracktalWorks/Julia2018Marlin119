@@ -129,7 +129,7 @@
 #define Z_HOME_DIR   1
 
 #if BV_REG() || BV(JULIA_2018_RPI_E)
-  #define MANUAL_X_HOME_POS 0
+  #define MANUAL_X_HOME_POS -10
   #define MANUAL_Y_HOME_POS Y_BED_SIZE 
   #define MANUAL_Z_HOME_POS Z_MAX_POS
 #elif BV_PRO_SINGLE()
@@ -151,7 +151,7 @@
   //#define DEFAULT_AXIS_STEPS_PER_UNIT   { 200,  200, 1007.874, 280 }  for 1/32 microstep ratio
   #define DEFAULT_AXIS_STEPS_PER_UNIT   { 100,  100, 503.937, 140 }
 #else
-  #define DEFAULT_AXIS_STEPS_PER_UNIT   { 160,  160, 1007.874, 280 }
+  #define DEFAULT_AXIS_STEPS_PER_UNIT   { 160,  160, 1007.874, 280 } //was { 160,  160, 1007.874, 280 } for old printers
 #endif
 #if BV_PRO() || BV_PRO_ABL() || BV_PRO_ABL24()
   #define DEFAULT_MAX_FEEDRATE          { 300, 300, 20, 45 }
