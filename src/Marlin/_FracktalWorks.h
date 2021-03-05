@@ -21,6 +21,10 @@
 #define JULIA_2018_PRO_DUAL_A             7
 #define JULIA_2018_PRO_SINGLE_A24         8
 #define JULIA_2018_PRO_DUAL_A24           9
+#define JULIA_2018_RPI_E_A                10
+#define JULIA_2018_RPI_A                  11
+
+
 
 #include "_Variant.h"
 

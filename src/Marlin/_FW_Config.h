@@ -31,6 +31,10 @@
   #define CUSTOM_MACHINE_NAME "Julia Pro Single ABL"
 #elif BV(JULIA_2018_PRO_DUAL_A)
   #define CUSTOM_MACHINE_NAME "Julia Pro Dual ABL"
+#elif BV(JULIA_2018_RPI_E_A)
+  #define COSTOM_MACHINE_NAME "Julia Extended ABL"
+#elif BV(JULIA_2018_RPI_A)
+  #define COSTOM_MACHINE_NAME "Julia Advanced ABL"
 #endif
 
 #define STRING_CONFIG_H_AUTHOR  "Fracktal Works"
@@ -55,10 +59,18 @@
   #define X_BED_SIZE  200
   #define Y_BED_SIZE  200
   #define Z_MAX_POS   210
+#elif BV(JULIA_2018_RPI_A)
+  #define X_BED_SIZE  200
+  #define Y_BED_SIZE  200
+  #define Z_MAX_POS   225
 #elif BV(JULIA_2018_RPI_E)
   #define X_BED_SIZE  250
   #define Y_BED_SIZE  249 // since it was hitting, reduced from 250, very and revert back if needed 
   #define Z_MAX_POS   300
+  #elif BV(JULIA_2018_RPI_E_A)
+  #define X_BED_SIZE  250
+  #define Y_BED_SIZE  250
+  #define Z_MAX_POS   320
 #elif BV(JULIA_2018_PRO_SINGLE)
   #define X_BED_SIZE  400
   #define Y_BED_SIZE  400
@@ -128,7 +140,7 @@
 #define Y_HOME_DIR   1
 #define Z_HOME_DIR   1
 
-#if BV_REG() || BV(JULIA_2018_RPI_E)
+#if BV_REG() || BV(JULIA_2018_RPI_E) || BV(JULIA_2018_RPI_E_A)|| BV(JULIA_2018_RPI_A)
   #define MANUAL_X_HOME_POS -10
   #define MANUAL_Y_HOME_POS Y_BED_SIZE 
   #define MANUAL_Z_HOME_POS Z_MAX_POS
@@ -147,13 +159,13 @@
 
 /**  Movement  **/
 #define S_CURVE_ACCELERATION
-#if BV_PRO_ABL24()
+#if BV_PRO_ABL24()|| BV(JULIA_2018_RPI_A) || BV(JULIA_2018_RPI_E_A)
   //#define DEFAULT_AXIS_STEPS_PER_UNIT   { 200,  200, 1007.874, 280 }  for 1/32 microstep ratio
   #define DEFAULT_AXIS_STEPS_PER_UNIT   { 100,  100, 503.937, 140 }
 #else
   #define DEFAULT_AXIS_STEPS_PER_UNIT   { 160,  160, 1007.874, 280 } //was { 160,  160, 1007.874, 280 } for old printers
 #endif
-#if BV_PRO() || BV_PRO_ABL() || BV_PRO_ABL24()
+#if BV_PRO() || BV_PRO_ABL() || BV_PRO_ABL24() || BV(JULIA_2018_RPI_A) || BV(JULIA_2018_RPI_E_A)
   #define DEFAULT_MAX_FEEDRATE          { 300, 300, 20, 45 }
 #else
   #define DEFAULT_MAX_FEEDRATE          { 200, 200, 20, 45 }
@@ -164,6 +176,9 @@
 #elif BV_PRO_ABL24()
   #define DEFAULT_MAX_ACCELERATION      { 1500, 1500, 50, 10000 }
   #define DEFAULT_ACCELERATION          1000    // X, Y, Z and E acceleration for printing moves
+#elif BV(JULIA_2018_RPI_A) || BV(JULIA_2018_RPI_E_A)
+    #define DEFAULT_MAX_ACCELERATION      { 2000, 2000, 50, 10000 }
+  #define DEFAULT_ACCELERATION          1500    // X, Y, Z and E acceleration for printing moves
 #else
   #define DEFAULT_MAX_ACCELERATION      { 1500, 1500, 50, 10000 }
   #define DEFAULT_ACCELERATION          1000    // X, Y, Z and E acceleration for printing moves
@@ -226,7 +241,7 @@
 
 
 /**  Bed leveling  **/
-#if BV_PRO_ABL() || BV_PRO_ABL24()   // auto bed leveling
+#if BV_PRO_ABL() || BV_PRO_ABL24() || BV(JULIA_2018_RPI_E_A)  // auto bed leveling
   #define Z_MIN_PROBE_ENDSTOP
   #define FIX_MOUNTED_PROBE
   #define Z_PROBE_OFFSET_FROM_EXTRUDER 0.2   // Z offset: -below +above  [the nozzle]
@@ -234,6 +249,26 @@
   #define DELAY_BEFORE_PROBING 1000   // (ms) To prevent vibrations from triggering sensor
 
   #define MIN_PROBE_EDGE 25
+  #define Z_PROBE_SPEED_FAST (HOMING_FEEDRATE_Z/10)
+  #define Z_PROBE_SPEED_SLOW (Z_PROBE_SPEED_FAST / 15)
+  #define MULTIPLE_PROBING 2
+
+  #define Z_CLEARANCE_DEPLOY_PROBE   5 // Z Clearance for Deploy/Stow
+  #define Z_CLEARANCE_BETWEEN_PROBES  3 // Z Clearance between probe points
+  #define Z_CLEARANCE_MULTI_PROBE     1 // Z Clearance between multiple probes
+
+  #define Z_MIN_PROBE_REPEATABILITY_TEST
+
+  #define AUTO_BED_LEVELING_BILINEAR
+  #define DEBUG_LEVELING_FEATURE
+#elif BV(JULIA_2018_RPI_A)
+  #define Z_MIN_PROBE_ENDSTOP
+  #define FIX_MOUNTED_PROBE
+  #define Z_PROBE_OFFSET_FROM_EXTRUDER 0.2   // Z offset: -below +above  [the nozzle]
+
+  #define DELAY_BEFORE_PROBING 1000   // (ms) To prevent vibrations from triggering sensor
+
+  #define MIN_PROBE_EDGE 20
   #define Z_PROBE_SPEED_FAST (HOMING_FEEDRATE_Z/10)
   #define Z_PROBE_SPEED_SLOW (Z_PROBE_SPEED_FAST / 15)
   #define MULTIPLE_PROBING 2
