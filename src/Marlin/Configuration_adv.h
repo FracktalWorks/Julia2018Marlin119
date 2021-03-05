@@ -83,7 +83,7 @@
 
 #define JUNCTION_DEVIATION
 #if ENABLED(JUNCTION_DEVIATION)
-  #if BV_NPI() || BV_PIX()
+  #if BV_NPI() || BV_PIX() || BV(JULIA_2018_RPI_E) || BV(JULIA_2018_RPI_A) || BV(JULIA_2018_RPI_E_A)
     #define JUNCTION_DEVIATION_MM 0.025  // (mm) Distance from real junction edge
   #elif BV_PRO_SINGLE()
     #define JUNCTION_DEVIATION_MM 0.025

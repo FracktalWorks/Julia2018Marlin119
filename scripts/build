@@ -36,7 +36,7 @@ if [[ -z "$V_OPT" ]];	then
 	exit 1
 fi
 
-if [[ $V_OPT -lt 0 || $V_OPT -gt 9 ]]; then
+if [[ $V_OPT -lt 0 || $V_OPT -gt 11 ]]; then
 	echo "Invalid parameters"
 	exit 1
 fi
