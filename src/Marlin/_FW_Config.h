@@ -72,9 +72,9 @@
   #define Y_BED_SIZE  400
   #define Z_MAX_POS   400
 #elif BV(JULIA_2018_PRO_DUAL_A) || BV(JULIA_2018_PRO_DUAL_A24)
-  #define X_BED_SIZE  370
-  #define Y_BED_SIZE  395
-  #define Z_MAX_POS   400
+  #define X_BED_SIZE  250
+  #define Y_BED_SIZE  250
+  #define Z_MAX_POS   255
 #endif
 
 /** Min Pos **/
@@ -97,19 +97,19 @@
 #define Z_MIN_POS 0
 
 /**  Stepper  **/
-#define X_DRIVER_TYPE     DRV8825
-#define Y_DRIVER_TYPE     DRV8825
-#define Z_DRIVER_TYPE     DRV8825
-#define E0_DRIVER_TYPE    DRV8825
-#define E1_DRIVER_TYPE    DRV8825
+#define X_DRIVER_TYPE     TMC2208//DRV8825
+#define Y_DRIVER_TYPE     TMC2208//DRV8825
+#define Z_DRIVER_TYPE     TMC2208//DRV8825
+#define E0_DRIVER_TYPE    TMC2208//DRV8825
+#define E1_DRIVER_TYPE    TMC2208//DRV8825
 
 #if BV_PRO() || BV_PRO_ABL() || BV_PRO_ABL24()
-  #define INVERT_X_DIR    true
-  #define INVERT_Y_DIR    true
-  #define INVERT_Z_DIR    true
+  #define INVERT_X_DIR    false
+  #define INVERT_Y_DIR    false
+  #define INVERT_Z_DIR   true
 
-  #define INVERT_E0_DIR   false
-  #define INVERT_E1_DIR   true
+  #define INVERT_E0_DIR   true//false
+  #define INVERT_E1_DIR   false//true
 #else
   #define INVERT_X_DIR    false
   #define INVERT_Y_DIR    false
@@ -129,7 +129,7 @@
 #define Z_HOME_DIR   1
 
 #if BV_REG() || BV(JULIA_2018_RPI_E)
-  #define MANUAL_X_HOME_POS -10
+  #define MANUAL_X_HOME_POS 0
   #define MANUAL_Y_HOME_POS Y_BED_SIZE 
   #define MANUAL_Z_HOME_POS Z_MAX_POS
 #elif BV_PRO_SINGLE()
@@ -137,7 +137,7 @@
   #define MANUAL_Y_HOME_POS Y_BED_SIZE
   #define MANUAL_Z_HOME_POS Z_MAX_POS
 #elif BV_PRO_DUAL()
-  #define MANUAL_X_HOME_POS -40 // (-1 * HOTEND_OFFSET_X[1])
+  #define MANUAL_X_HOME_POS -35 // (-1 * HOTEND_OFFSET_X[1])
   #define MANUAL_Y_HOME_POS Y_BED_SIZE
   #define MANUAL_Z_HOME_POS Z_MAX_POS
 #endif
@@ -151,18 +151,18 @@
   //#define DEFAULT_AXIS_STEPS_PER_UNIT   { 200,  200, 1007.874, 280 }  for 1/32 microstep ratio
   #define DEFAULT_AXIS_STEPS_PER_UNIT   { 100,  100, 503.937, 140 }
 #else
-  #define DEFAULT_AXIS_STEPS_PER_UNIT   { 160,  160, 1007.874, 280 } //was { 160,  160, 1007.874, 280 } for old printers
+  #define DEFAULT_AXIS_STEPS_PER_UNIT   { 100,  100, 503.937, 140 }
 #endif
 #if BV_PRO() || BV_PRO_ABL() || BV_PRO_ABL24()
-  #define DEFAULT_MAX_FEEDRATE          { 300, 300, 20, 45 }
+  #define DEFAULT_MAX_FEEDRATE          { 200, 200, 20, 45 }
 #else
   #define DEFAULT_MAX_FEEDRATE          { 200, 200, 20, 45 }
 #endif
 #if BV_PRO() || BV_PRO_ABL()
-  #define DEFAULT_MAX_ACCELERATION      { 600, 600, 50, 10000 }
+  #define DEFAULT_MAX_ACCELERATION      { 800, 800, 50, 10000 }
   #define DEFAULT_ACCELERATION          400    // X, Y, Z and E acceleration for printing moves
 #elif BV_PRO_ABL24()
-  #define DEFAULT_MAX_ACCELERATION      { 1500, 1500, 50, 10000 }
+  #define DEFAULT_MAX_ACCELERATION      { 1000, 1000, 50, 10000 }
   #define DEFAULT_ACCELERATION          1000    // X, Y, Z and E acceleration for printing moves
 #else
   #define DEFAULT_MAX_ACCELERATION      { 1500, 1500, 50, 10000 }
@@ -197,9 +197,11 @@
 #endif
 
 /**  Thermistor  **/
-#define TEMP_SENSOR_0       3
+#define TEMP_SENSOR_0       20
 #if BV_PRO_DUAL()
-  #define TEMP_SENSOR_1     3
+  #define TEMP_SENSOR_1     20
+  // #define TEMP_SENSOR_2     3
+  // #define TEMP_SENSOR_3     3
 #else
   #define TEMP_SENSOR_1     0
 #endif
