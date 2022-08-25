@@ -97,11 +97,11 @@
 #define Z_MIN_POS 0
 
 /**  Stepper  **/
-#define X_DRIVER_TYPE     TMC2208//DRV8825
-#define Y_DRIVER_TYPE     TMC2208//DRV8825
-#define Z_DRIVER_TYPE     TMC2208//DRV8825
-#define E0_DRIVER_TYPE    TMC2208//DRV8825
-#define E1_DRIVER_TYPE    TMC2208//DRV8825
+#define X_DRIVER_TYPE     DRV8825
+#define Y_DRIVER_TYPE     DRV8825
+#define Z_DRIVER_TYPE     DRV8825
+#define E0_DRIVER_TYPE    DRV8825
+#define E1_DRIVER_TYPE    DRV8825
 
 #if BV_PRO() || BV_PRO_ABL() || BV_PRO_ABL24()
   #define INVERT_X_DIR    true
@@ -111,11 +111,11 @@
   #define INVERT_E0_DIR   false
   #define INVERT_E1_DIR   true
 #else
-  #define INVERT_X_DIR    true//false
-  #define INVERT_Y_DIR    true//false
-  #define INVERT_Z_DIR    true//false
+  #define INVERT_X_DIR    false
+  #define INVERT_Y_DIR    false
+  #define INVERT_Z_DIR    false
 
-  #define INVERT_E0_DIR   false//true
+  #define INVERT_E0_DIR   true
 #endif
 
 /**  Enstops  **/
