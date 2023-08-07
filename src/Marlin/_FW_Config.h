@@ -234,11 +234,11 @@
   #define DELAY_BEFORE_PROBING 1000   // (ms) To prevent vibrations from triggering sensor
 
   #define MIN_PROBE_EDGE 25
-  #define Z_PROBE_SPEED_FAST (HOMING_FEEDRATE_Z/10)
-  #define Z_PROBE_SPEED_SLOW (Z_PROBE_SPEED_FAST / 15)
+  #define Z_PROBE_SPEED_FAST (3*60)
+  #define Z_PROBE_SPEED_SLOW (Z_PROBE_SPEED_FAST / 2)
   #define MULTIPLE_PROBING 2
 
-  #define Z_CLEARANCE_DEPLOY_PROBE   5 // Z Clearance for Deploy/Stow
+  #define Z_CLEARANCE_DEPLOY_PROBE   10 // Z Clearance for Deploy/Stow
   #define Z_CLEARANCE_BETWEEN_PROBES  3 // Z Clearance between probe points
   #define Z_CLEARANCE_MULTI_PROBE     1 // Z Clearance between multiple probes
 
